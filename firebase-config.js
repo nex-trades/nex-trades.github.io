@@ -3,12 +3,12 @@
 // ============================================================
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB0MEsycHQszPxavdE1veP3o6Hm6rGbTXs",
-  authDomain: "nextrade-b7020.firebaseapp.com",
-  projectId: "nextrade-b7020",
-  storageBucket: "nextrade-b7020.firebasestorage.app",
-  messagingSenderId: "115663396960",
-  appId: "1:115663396960:web:6ca498109c6a5ab40d2305"
+  apiKey: "AIzaSyAYv59bowQv9d-gwV05R0tked6vVexhA-Y",
+  authDomain: "nextrade-583e3.firebaseapp.com",
+  projectId: "nextrade-583e3",
+  storageBucket: "nextrade-583e3.firebasestorage.app",
+  messagingSenderId: "25777384359",
+  appId: "1:25777384359:web:0b39ca073c8e306cd46482"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -70,7 +70,7 @@ function getInstrument(symbol) {
 var PRICE_TTL       = 60  * 1000;        // 60 seconds — Forex fetch interval
 var COMMODITY_TTL   = 60  * 60 * 1000;   // 1 hour     — Commodity fetch interval (100 req/month)
 var SIM_TICK        = 10  * 1000;        // 10 seconds  — simulation tick speed
-var GOLD_API_KEY    = 'goldapi-27edd8725217901bd1db7c85a1ca818d-io';
+var GOLD_API_KEY    = 'goldapi-a879adf4012e64507e836cb34c6bf9d2-io';
 
 var CRYPTO_SYMBOLS = {
   'BTC/USD':  'bitcoin',
