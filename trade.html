@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Trade</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .category-tabs { display:flex; gap:8px; margin-bottom:14px; }
+    .cat-tab {
+      padding:6px 16px; border-radius:50px; border:1.5px solid var(--border);
+      background:var(--surface-2); font-family:var(--font-b); font-size:.8rem;
+      font-weight:600; cursor:pointer; transition:all .18s; color:var(--text-muted);
+    }
+    .cat-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:20px; }
+    .chart-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
+    .chart-symbol { font-family:var(--font-h); font-size:1.1rem; font-weight:700; }
+    .chart-price-live { font-family:var(--font-m); font-size:1.4rem; font-weight:700; }
+    .chart-body { padding:0; }
+    .sl-tp-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    #tvWidgetContainer { width:100%; height:400px; }
+    #tvWidgetContainer iframe { border:none!important; }
+  /* Expandable position row */
+  .mini-pos-row { cursor:pointer; transition:background .15s; }
+  .mini-pos-row:hover { background:var(--surface-2); }
+  .mini-pos-detail { display:none; padding:10px 16px 14px; background:var(--surface-2); border-bottom:1px solid var(--border-lt); }
+  .mini-pos-detail.open { display:block; }
+  .mini-pos-detail-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .mini-pos-detail-item { display:flex; flex-direction:column; gap:3px; }
+  .mini-pos-detail-item .lbl { font-size:.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.4px; }
+  .mini-pos-detail-item .val { font-size:.84rem; font-weight:700; font-family:var(--font-m); }
+  </style>
+  <!-- Google Translate: restore saved language -->
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en'){
+        // Inject the cookie Google Translate reads on load
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+      }
+    })();
+  </script>
+  <!-- Google Translate widget (hidden element; widget is triggered via JS) -->
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{
+      background:var(--surface-2,#f4f4f4)!important;border:1px solid var(--border,#ddd)!important;
+      border-radius:6px!important;padding:4px 8px!important;font-size:.78rem!important;
+      display:inline-flex!important;align-items:center!important;cursor:pointer!important;
+      gap:4px!important;
+    }
+    .goog-te-gadget-simple span{color:var(--text,#222)!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+    #nt-translate-wrap{display:inline-flex;align-items:center;}
+  </style>
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('nt-theme')||'light');</script>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="brand-logo">N</div><div class="brand-name">Nex<span>Trade</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Dashboard</a>
+      <a href="trade.html"     class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Trade</a>
+      <a href="copytrade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Copy Trade</a>
+      <a href="market.html"    class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Markets</a>
+      <a href="history.html"   class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> History</a>
+      <div class="nav-section-label" style="margin-top:10px;">Account</div>
+      <a href="deposit.html"   class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Deposit</a>
+      <a href="withdraw.html"  class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Withdraw</a>
+      <a href="profile.html"   class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Profile</a>
+      <a href="support.html"   class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Support</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar" id="sidebarAvatar">?</div>
+        <div class="user-info"><div class="name" id="sidebarName">—</div><div class="uid" id="sidebarUid">—</div></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="toggleTheme()" id="themeToggle" class="theme-btn" style="flex:0 0 36px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></button>
+        <button onclick="auth.signOut().then(()=>location.href='login.html')" class="btn btn-ghost btn-full btn-sm">Logout</button>
+      </div>
+    </div>
+  </aside>
+
+  <div style="flex:1;overflow-x:hidden;">
+    <div class="topbar">
+      <div class="topbar-title">Trade</div>
+      <div class="topbar-actions">
+        <span style="font-size:.8rem;color:var(--text-muted);">Balance: <strong class="mono" id="topbarBalance">—</strong></span>
+        <button onclick="toggleTheme()" class="theme-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></button>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="main-grid">
+        <!-- Left: Chart + asset list -->
+        <div>
+          <div class="category-tabs">
+            <button class="cat-tab active" onclick="filterCategory('all',this)">All</button>
+            <button class="cat-tab" onclick="filterCategory('forex',this)">Forex</button>
+            <button class="cat-tab" onclick="filterCategory('commodities',this)">Commodities</button>
+            <button class="cat-tab" onclick="filterCategory('crypto',this)">Crypto</button>
+          </div>
+
+          <div class="asset-select-grid" id="assetGrid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:18px;"></div>
+
+          <!-- TradingView Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-symbol" id="chartSymbol">EUR/USD</div>
+                <div style="font-size:.74rem;color:var(--text-muted);" id="chartSubLabel">Forex</div>
+              </div>
+              <div class="chart-price-live" id="chartPrice">—</div>
+            </div>
+            <div class="chart-body">
+              <!-- TradingView Widget -->
+              <div id="tvWidgetContainer"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Trade panel -->
+        <div>
+          <div class="trade-panel">
+            <div class="trade-tabs">
+              <button class="trade-tab buy active" id="tabBuy" onclick="setTradeType('BUY')">▲ BUY</button>
+              <button class="trade-tab sell" id="tabSell" onclick="setTradeType('SELL')">▼ SELL</button>
+            </div>
+            <div class="trade-body">
+              <div class="current-price-box">
+                <div><div class="label" id="orderSymbolLabel">EUR/USD</div><div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;" id="tradeTypeLabel">BUY ORDER</div></div>
+                <div class="price mono" id="orderPrice">—</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Lot Size</label>
+                <input type="number" class="form-control" id="lotSize" value="0.01" step="0.01" min="0.01" max="100" placeholder="0.01"/>
+                <div class="form-hint">1 lot = standard contract</div>
+              </div>
+
+              <div class="sl-tp-row">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Stop Loss</label>
+                  <input type="number" class="form-control" id="stopLoss" placeholder="Optional" step="0.0001"/>
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Take Profit</label>
+                  <input type="number" class="form-control" id="takeProfit" placeholder="Optional" step="0.0001"/>
+                </div>
+              </div>
+
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin:14px 0;font-size:.82rem;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                  <span style="color:var(--text-muted);">Entry Price</span>
+                  <span class="mono" id="previewEntry">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Account Balance</span>
+                  <span class="mono" id="previewBalance">—</span>
+                </div>
+              </div>
+
+              <button class="btn btn-buy btn-full btn-lg" id="placeOrderBtn" onclick="placeTrade()">
+                ▲ Place BUY Order
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px;">
+            <div class="card-header"><h3>Open Positions</h3><a href="dashboard.html" style="font-size:.78rem;color:var(--accent);">View all</a></div>
+            <div id="miniPositions" style="padding:4px 0;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-nav">
+  <a href="dashboard.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>Home</a>
+  <a href="trade.html" class="active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Trade</a>
+  <a href="copytrade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Copy</a>
+  <a href="deposit.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>Deposit</a>
+  <a href="withdraw.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Withdraw</a>
+  <a href="kyc.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></span>Verify</a>
+  <a href="profile.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Profile</a>
+</div>
+
+<!-- Close Trade Modal -->
+<div class="modal-overlay" id="tradeCloseModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header"><h3>Close Trade</h3><button class="modal-close" onclick="document.getElementById('tradeCloseModal').style.display='none'">&#x2715;</button></div>
+    <div class="modal-body"><p style="margin-bottom:16px;color:var(--text-md);">Are you sure you want to close this position?</p><div id="tradeCloseInfo" style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-size:.88rem;margin-bottom:16px;"></div></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('tradeCloseModal').style.display='none'">Cancel</button><button class="btn btn-danger" onclick="confirmTradeClose()">Close Trade</button></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  initTheme();
+  var currentUser = null, userData = null;
+  var prices = {}, selectedSymbol = 'EUR/USD', tradeType = 'BUY';
+  var currentCategory = 'all';
+  var priceRefreshInterval = null;
+
+  // TradingView symbol mapping
+  var TV_SYMBOLS = {
+    'EUR/USD':  'FX:EURUSD',        'GBP/USD':  'FX:GBPUSD',
+    'USD/JPY':  'FX:USDJPY',        'USD/CHF':  'FX:USDCHF',
+    'AUD/USD':  'FX:AUDUSD',        'USD/CAD':  'FX:USDCAD',
+    'EUR/GBP':  'FX:EURGBP',        'NZD/USD':  'FX:NZDUSD',
+    'XAU/USD':  'TVC:GOLD',         'XAG/USD':  'TVC:SILVER',
+    'WTI/USD':  'TVC:USOIL',        'NGAS/USD': 'TVC:NATURALGAS',
+    'XPT/USD':  'TVC:PLATINUM',
+    'BTC/USD':  'BINANCE:BTCUSDT',  'ETH/USD':  'BINANCE:ETHUSDT',
+    'XRP/USD':  'BINANCE:XRPUSDT',  'SOL/USD':  'BINANCE:SOLUSDT',
+    'BNB/USD':  'BINANCE:BNBUSDT',  'ADA/USD':  'BINANCE:ADAUSDT',
+    'AVAX/USD': 'BINANCE:AVAXUSDT'
+  };
+
+  requireAuth(async function(user) {
+    currentUser = user;
+    var snap = await db.collection('users').doc(user.uid).get();
+    userData = snap.data();
+    document.getElementById('sidebarName').textContent   = userData.fullName || 'Trader';
+    if (typeof smartsupp === 'function') { smartsupp('name', userData.fullName||'Trader'); smartsupp('email', userData.email||''); }
+    document.getElementById('sidebarUid').textContent    = userData.accountId || '--';
+    document.getElementById('sidebarAvatar').textContent = (userData.fullName || 'T')[0];
+    document.getElementById('topbarBalance').textContent  = fmtCurrency(userData.balance);
+    document.getElementById('previewBalance').textContent = fmtCurrency(userData.balance);
+
+    buildAssetGrid();
+    loadTVWidget(selectedSymbol);
+
+    // Step 1: Load prices first
+    await loadLivePrices(prices);
+    updatePriceDisplay(selectedSymbol);
+
+    // Step 2: Load mini positions + run SLTP check before displaying
+    await loadMiniPositions();
+
+    // Step 3: Start ongoing price refresh
+    startPriceRefresh(prices, function() {
+      updatePriceDisplay(selectedSymbol);
+      buildAssetGrid();
+      loadMiniPositions();
+    });
+  });
+
+  // TradingView chart widget
+  function loadTVWidget(symbol) {
+    var container = document.getElementById('tvWidgetContainer');
+    container.innerHTML = '';
+    var tvSym = TV_SYMBOLS[symbol] || 'FX:EURUSD';
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    function createWidget() {
+      new TradingView.widget({
+        container_id: 'tvWidgetContainer',
+        symbol: tvSym,
+        interval: '15',
+        timezone: 'Etc/UTC',
+        theme: isDark ? 'dark' : 'light',
+        style: '1',
+        locale: 'en',
+        toolbar_bg: isDark ? '#131B2C' : '#ffffff',
+        enable_publishing: false,
+        hide_top_toolbar: false,
+        hide_legend: false,
+        save_image: false,
+        height: 400,
+        width: '100%',
+        studies: [],
+        show_popup_button: false
+      });
+    }
+
+    if (window.TradingView) {
+      createWidget();
+    } else {
+      var script = document.createElement('script');
+      script.src = 'https://s3.tradingview.com/tv.js';
+      script.onload = createWidget;
+      document.head.appendChild(script);
+    }
+  }
+
+  function updatePriceDisplay(symbol) {
+    var price = prices[symbol] || getInstrument(symbol).defaultPrice || 0;
+    document.getElementById('chartPrice').textContent   = fmtPrice(price, symbol);
+    document.getElementById('orderPrice').textContent   = fmtPrice(price, symbol);
+    document.getElementById('previewEntry').textContent = fmtPrice(price, symbol);
+  }
+
+  function filterCategory(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.cat-tab').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    buildAssetGrid();
+  }
+
+  function buildAssetGrid() {
+    var list = currentCategory === 'forex'       ? INSTRUMENTS.forex
+             : currentCategory === 'commodities' ? INSTRUMENTS.commodities
+             : currentCategory === 'crypto'      ? INSTRUMENTS.crypto
+             : ALL_INSTRUMENTS;
+    document.getElementById('assetGrid').innerHTML = list.map(function(i) {
+      var p = prices[i.symbol] || i.defaultPrice;
+      return '<div class="asset-chip ' + (i.symbol === selectedSymbol ? 'active' : '') + '" data-sym="'+i.symbol+'" onclick="selectAsset(this.dataset.sym)">' +
+             '<div class="sym">' + i.symbol + '</div>' +
+             '<div class="prc">' + fmtPrice(p, i.symbol) + '</div></div>';
+    }).join('');
+  }
+
+  function selectAsset(symbol) {
+    selectedSymbol = symbol;
+    document.getElementById('chartSymbol').textContent      = symbol;
+    document.getElementById('chartSubLabel').textContent    = INSTRUMENTS.crypto.find(function(i) { return i.symbol === symbol; }) ? 'Crypto' : INSTRUMENTS.commodities.find(function(i) { return i.symbol === symbol; }) ? 'Commodity' : 'Forex';
+    document.getElementById('orderSymbolLabel').textContent = symbol;
+    updatePriceDisplay(symbol);
+    buildAssetGrid();
+    loadTVWidget(symbol);
+  }
+
+  function setTradeType(type) {
+    tradeType = type;
+    document.getElementById('tabBuy').classList.toggle('active', type === 'BUY');
+    document.getElementById('tabSell').classList.toggle('active', type === 'SELL');
+    document.getElementById('tradeTypeLabel').textContent = type + ' ORDER';
+    var btn = document.getElementById('placeOrderBtn');
+    btn.textContent = type === 'BUY' ? 'Place BUY Order' : 'Place SELL Order';
+    btn.className = 'btn btn-full btn-lg ' + (type === 'BUY' ? 'btn-buy' : 'btn-sell');
+  }
+
+  async function placeTrade() {
+    var lotSize    = parseFloat(document.getElementById('lotSize').value);
+    var stopLoss   = parseFloat(document.getElementById('stopLoss').value) || null;
+    var takeProfit = parseFloat(document.getElementById('takeProfit').value) || null;
+    var price      = prices[selectedSymbol] || getInstrument(selectedSymbol).defaultPrice;
+
+    if (!lotSize || lotSize <= 0) return showToast('Enter a valid lot size.', 'error');
+    if (!price) return showToast('Price not available.', 'error');
+    if ((userData && userData.balance || 0) <= 0) return showToast('Insufficient balance. Please deposit first.', 'error');
+
+    var btn = document.getElementById('placeOrderBtn');
+    btn.textContent = 'Placing...';
+    btn.disabled = true;
+    try {
+      await db.collection('trades').add({
+        userId: currentUser.uid,
+        symbol: selectedSymbol,
+        type: tradeType,
+        lotSize: lotSize,
+        entryPrice: price,
+        stopLoss: stopLoss,
+        takeProfit: takeProfit,
+        status: 'open',
+        profitLoss: 0,
+        openedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        closedAt: null,
+        exitPrice: null,
+        closedBy: null
+      });
+      showToast(tradeType + ' order placed - ' + selectedSymbol + ' @ ' + fmtPrice(price, selectedSymbol));
+      document.getElementById('stopLoss').value   = '';
+      document.getElementById('takeProfit').value = '';
+      await loadMiniPositions();
+    } catch(e) {
+      showToast('Error placing trade.', 'error');
+      console.error(e);
+    }
+    setTradeType(tradeType);
+    btn.disabled = false;
+  }
+
+  async function loadMiniPositions() {
+    var snap = await db.collection('trades').where('userId','==',currentUser.uid).get();
+    var allOpen = snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }).filter(function(t){ return t.status==='open'; });
+    // Run TP/SL check before displaying
+    var toClose = [];
+    allOpen.forEach(function(t) {
+      var cur = prices[t.symbol] || t.entryPrice;
+      if (!cur) return;
+      var hit = null; var exitPrice = cur;
+      if (t.takeProfit) {
+        if (t.type==='BUY'  && cur >= t.takeProfit) { hit='tp'; exitPrice=t.takeProfit; }
+        if (t.type==='SELL' && cur <= t.takeProfit) { hit='tp'; exitPrice=t.takeProfit; }
+      }
+      if (!hit && t.stopLoss) {
+        if (t.type==='BUY'  && cur <= t.stopLoss) { hit='sl'; exitPrice=t.stopLoss; }
+        if (t.type==='SELL' && cur >= t.stopLoss) { hit='sl'; exitPrice=t.stopLoss; }
+      }
+      if (hit) toClose.push({ trade:t, reason:hit, price:exitPrice });
+    });
+    for (var i=0; i<toClose.length; i++) {
+      var item=toClose[i]; var t=item.trade;
+      var pnl=calcPnL(t,item.price);
+      await db.collection('trades').doc(t.id).update({ status:'closed', exitPrice:item.price, profitLoss:pnl, closedAt:firebase.firestore.FieldValue.serverTimestamp(), closedBy:item.reason });
+      var nb=(userData.balance||0)+pnl;
+      await db.collection('users').doc(currentUser.uid).update({ balance:nb });
+      userData.balance=nb;
+      document.getElementById('topbarBalance').textContent=fmtCurrency(nb);
+      document.getElementById('previewBalance').textContent=fmtCurrency(nb);
+    }
+    var snap2 = await db.collection('trades').where('userId','==',currentUser.uid).get();
+    var open = snap2.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }).filter(function(t){ return t.status==='open'; });
+    var el = document.getElementById('miniPositions');
+    if (!open.length) { el.innerHTML='<div style="padding:16px;text-align:center;font-size:.82rem;color:var(--text-muted);">No open positions.</div>'; return; }
+    el.innerHTML = open.map(function(t) {
+      var curPrc=prices[t.symbol]||t.entryPrice;
+      var pnl=calcPnL(t,curPrc);
+      var pnlClass=pnl>=0?'pnl-positive':'pnl-negative';
+      var isJPY=t.symbol.includes('JPY');
+      var isCom=['XAU/USD','XAG/USD','WTI/USD','NGAS/USD','XPT/USD'].indexOf(t.symbol)!==-1;
+      var dec=isJPY?3:isCom?2:5;
+      var tpPnl=t.takeProfit?calcPnL(t,t.takeProfit):null;
+      var slPnl=t.stopLoss?calcPnL(t,t.stopLoss):null;
+      var tpLvl=t.takeProfit?t.takeProfit.toFixed(dec):'—';
+      var slLvl=t.stopLoss?t.stopLoss.toFixed(dec):'—';
+      var tpAmt=tpPnl!==null?'<span class="pnl-positive"> · +'+fmtCurrency(Math.abs(tpPnl))+'</span>':'';
+      var slAmt=slPnl!==null?'<span class="pnl-negative"> · -'+fmtCurrency(Math.abs(slPnl))+'</span>':'';
+      return '<div>'+
+        '<div class="mini-pos-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border-lt);" data-tid="'+t.id+'" onclick="toggleMiniDetail(this.dataset.tid)">'+
+          '<div style="display:flex;align-items:center;gap:8px;">'+
+            '<svg width="14" height="14" id="arr_'+t.id+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>'+
+            '<strong style="font-size:.85rem;">'+t.symbol+'</strong>'+
+            '<span class="badge badge-'+t.type.toLowerCase()+'" style="font-size:.67rem;">'+t.type+'</span>'+
+          '</div>'+
+          '<div class="'+pnlClass+'" style="font-family:var(--font-m);font-size:.82rem;">'+fmtCurrency(pnl)+'</div>'+
+        '</div>'+
+        '<div class="mini-pos-detail" id="detail_'+t.id+'">'+
+          '<div class="mini-pos-detail-grid">'+
+            '<div class="mini-pos-detail-item"><span class="lbl">Current P&L</span><span class="val '+pnlClass+'">'+fmtCurrency(pnl)+'</span></div>'+
+            '<div class="mini-pos-detail-item"><span class="lbl">Take Profit</span><span class="val" style="font-size:.82rem;">'+tpLvl+tpAmt+'</span></div>'+
+            '<div class="mini-pos-detail-item"><span class="lbl">Stop Loss</span><span class="val" style="font-size:.82rem;">'+slLvl+slAmt+'</span></div>'+
+          '</div>'+
+          '<button class="btn btn-danger btn-sm" style="margin-top:10px;width:100%;" data-tid="'+t.id+'" data-sym="'+t.symbol+'" data-type="'+t.type+'" data-lot="'+t.lotSize+'" data-entry="'+t.entryPrice+'" data-cur="'+curPrc+'" data-pnl="'+pnl+'" onclick="openTradeCloseFromBtn(this)">Close Position</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  var _tradeCloseData = null;
+  function openTradeCloseFromBtn(btn) {
+    openTradeClose(btn.dataset.tid, btn.dataset.sym, btn.dataset.type,
+      parseFloat(btn.dataset.lot), parseFloat(btn.dataset.entry),
+      parseFloat(btn.dataset.cur), parseFloat(btn.dataset.pnl));
+  }
+  function openTradeClose(id,symbol,type,lot,entry,curPrc,pnl) {
+    _tradeCloseData = { id:id, curPrc:curPrc, pnl:pnl };
+    var pnlClass = pnl>=0?'pnl-positive':'pnl-negative';
+    document.getElementById('tradeCloseInfo').innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.85rem;">'+
+        '<div><span style="color:var(--text-muted);">Symbol</span><br/><strong>'+symbol+'</strong></div>'+
+        '<div><span style="color:var(--text-muted);">Type</span><br/><strong>'+type+'</strong></div>'+
+        '<div><span style="color:var(--text-muted);">Entry</span><br/><span class="mono">'+entry+'</span></div>'+
+        '<div><span style="color:var(--text-muted);">Close Price</span><br/><span class="mono">'+curPrc+'</span></div>'+
+        '<div style="grid-column:1/-1;"><span style="color:var(--text-muted);">P&L</span><br/><span class="mono '+pnlClass+'" style="font-size:1.1rem;">'+fmtCurrency(pnl)+'</span></div>'+
+      '</div>';
+    document.getElementById('tradeCloseModal').style.display='flex';
+  }
+
+  async function confirmTradeClose() {
+    if (!_tradeCloseData) return;
+    var d=_tradeCloseData;
+    document.getElementById('tradeCloseModal').style.display='none';
+    try {
+      await db.collection('trades').doc(d.id).update({ status:'closed', exitPrice:d.curPrc, profitLoss:d.pnl, closedAt:firebase.firestore.FieldValue.serverTimestamp(), closedBy:'user' });
+      var nb=(userData.balance||0)+d.pnl;
+      await db.collection('users').doc(currentUser.uid).update({ balance:nb });
+      userData.balance=nb;
+      document.getElementById('topbarBalance').textContent=fmtCurrency(nb);
+      document.getElementById('previewBalance').textContent=fmtCurrency(nb);
+      showToast('Position closed. P&L: '+fmtCurrency(d.pnl), d.pnl>=0?'success':'error');
+      _tradeCloseData=null;
+      await loadMiniPositions();
+    } catch(e) { showToast('Error closing trade.','error'); console.error(e); }
+  }
+
+  function toggleMiniDetail(id) {
+    var detail=document.getElementById('detail_'+id);
+    var arr=document.getElementById('arr_'+id);
+    if (!detail) return;
+    var isOpen=detail.classList.contains('open');
+    document.querySelectorAll('.mini-pos-detail.open').forEach(function(el){ el.classList.remove('open'); });
+    document.querySelectorAll('[id^="arr_"]').forEach(function(el){ el.style.transform=''; });
+    if (!isOpen) { detail.classList.add('open'); if (arr) arr.style.transform='rotate(180deg)'; }
+  }
+</script>
+
+<!-- Smartsupp Live Chat -->
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'c0c38f8476efd1d3fc7bd4507febb581ebec7846';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+<!-- Google Translate: widget init & language persistence -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({
+      pageLanguage:'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+
+    // Watch for language changes and save to localStorage
+    function ntWatchLang(){
+      var sel = document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change', function(){
+          localStorage.setItem('nt-lang', sel.value);
+          document.cookie = 'googtrans=/en/' + sel.value + '; path=/';
+        });
+        // Apply saved language on load
+        var saved = localStorage.getItem('nt-lang');
+        if(saved && saved !== 'en' && sel.value !== saved){
+          sel.value = saved;
+          sel.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(ntWatchLang, 300);
+      }
+    }
+    ntWatchLang();
+
+    // Move widget into the nav slot once ready
+    function ntMountWidget(){
+      var wrap = document.getElementById('nt-translate-wrap');
+      var gadget = document.querySelector('.goog-te-gadget');
+      if(wrap && gadget){ wrap.appendChild(gadget); }
+      else { setTimeout(ntMountWidget, 300); }
+    }
+    ntMountWidget();
+  }
+</script>
+</body>
+</html>

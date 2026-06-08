@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Copy Trade</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .traders-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+    .trader-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:20px; transition:box-shadow .18s,border-color .18s; }
+    .trader-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.08); border-color:var(--accent); }
+    .trader-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+    .trader-avatar {
+      width:52px; height:52px; border-radius:50%; flex-shrink:0; position:relative;
+      background:var(--surface-2); border:2px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.3rem; font-weight:700; font-family:var(--font-h);
+      overflow:hidden;
+    }
+    .trader-avatar img { position:absolute; width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .trader-name { font-weight:700; font-size:.97rem; margin-bottom:2px; }
+    .trader-tag  { font-size:.72rem; color:var(--text-muted); }
+    .trader-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm); padding:12px; }
+    .trader-stat { text-align:center; }
+    .trader-stat .val { font-family:var(--font-m); font-size:.9rem; font-weight:700; margin-bottom:2px; }
+    .trader-stat .lbl { font-size:.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.4px; }
+    .wr-label { display:flex; justify-content:space-between; font-size:.74rem; margin-bottom:5px; }
+    .wr-bar { height:6px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:12px; }
+    .wr-fill { height:100%; background:var(--accent); border-radius:99px; }
+    .copy-btn { width:100%; padding:10px; border-radius:var(--r-sm); border:none; font-family:var(--font-b); font-weight:600; font-size:.88rem; cursor:pointer; transition:opacity .18s; background:var(--accent); color:#fff; }
+    .copy-btn:hover { opacity:.85; }
+    .coming-soon-badge { display:inline-block; background:rgba(255,176,32,.12); color:var(--warning); border:1px solid rgba(255,176,32,.3); border-radius:99px; font-size:.68rem; font-weight:700; padding:2px 9px; letter-spacing:.4px; text-transform:uppercase; margin-left:8px; vertical-align:middle; }
+  .copy-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+  .copy-modal-overlay.active { display:flex; }
+  .copy-modal { background:var(--surface); border-radius:var(--r); padding:24px; width:100%; max-width:380px; margin:16px; box-shadow:0 8px 40px rgba(0,0,0,.18); }
+  .copy-modal h3 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .copy-modal .sub { font-size:.8rem; color:var(--text-muted); margin-bottom:18px; }
+  .copy-modal .alloc-input { font-size:1.1rem; font-weight:700; text-align:center; padding:12px; border-radius:var(--r-sm); border:2px solid var(--accent); background:var(--surface-2); color:var(--text); width:100%; margin-bottom:8px; }
+  .copy-modal .alloc-hint { font-size:.75rem; color:var(--text-muted); text-align:center; margin-bottom:18px; }
+  .copy-modal .alloc-presets { display:flex; gap:8px; margin-bottom:18px; }
+  .copy-modal .alloc-preset { flex:1; padding:7px 4px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--surface-2); font-size:.78rem; font-weight:600; cursor:pointer; color:var(--text); transition:border-color .15s,background .15s; }
+  .copy-modal .alloc-preset:hover { border-color:var(--accent); background:rgba(0,212,170,.07); }
+  .active-copy-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .active-copy-info .name { font-weight:700; font-size:.9rem; }
+  .active-copy-info .meta { font-size:.75rem; color:var(--text-muted); margin-top:2px; }
+  .active-copy-pnl { font-family:var(--font-m); font-weight:700; font-size:.95rem; }
+  .stop-copy-btn { background:rgba(231,76,60,.1); color:#e74c3c; border:1px solid rgba(231,76,60,.25); border-radius:var(--r-sm); padding:6px 12px; font-size:.75rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  </style>
+  <!-- Google Translate: restore saved language -->
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en'){
+        // Inject the cookie Google Translate reads on load
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+      }
+    })();
+  </script>
+  <!-- Google Translate widget (hidden element; widget is triggered via JS) -->
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{
+      background:var(--surface-2,#f4f4f4)!important;border:1px solid var(--border,#ddd)!important;
+      border-radius:6px!important;padding:4px 8px!important;font-size:.78rem!important;
+      display:inline-flex!important;align-items:center!important;cursor:pointer!important;
+      gap:4px!important;
+    }
+    .goog-te-gadget-simple span{color:var(--text,#222)!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+    #nt-translate-wrap{display:inline-flex;align-items:center;}
+  </style>
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('nt-theme')||'light');</script>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="brand-logo">N</div><div class="brand-name">Nex<span>Trade</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Dashboard</a>
+      <a href="trade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Trade</a>
+      <a href="copytrade.html" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Copy Trade</a>
+      <a href="market.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Markets</a>
+      <a href="history.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> History</a>
+      <div class="nav-section-label" style="margin-top:10px;">Account</div>
+      <a href="deposit.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Deposit</a>
+      <a href="withdraw.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Withdraw</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Profile</a>
+      <a href="kyc.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></span> Verify ID <span id="kycNavBadge" style="display:none;margin-left:auto;font-size:.62rem;background:rgba(255,176,32,.2);color:var(--warning);border:1px solid rgba(255,176,32,.35);border-radius:99px;padding:1px 6px;font-weight:700;">Pending</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="avatar" id="sidebarAvatar">?</div><div class="user-info"><div class="name" id="sidebarName">--</div><div class="uid" id="sidebarUid">--</div></div></div>
+      <span id="nt-translate-wrap" style="display:inline-flex;align-items:center;margin-bottom:6px;width:100%;"></span>
+      <div style="display:flex;gap:8px;"><button onclick="toggleTheme()" id="themeToggle" class="theme-btn" style="flex:0 0 36px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></button><button onclick="auth.signOut().then(function(){location.href='login.html'})" class="btn btn-ghost btn-full btn-sm" style="display:flex;align-items:center;gap:5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</button></div>
+    </div>
+  </aside>
+  <div style="flex:1;overflow-x:hidden;">
+    <div class="topbar">
+      <div class="topbar-title">Copy Trade</div>
+      <div class="topbar-actions"><span style="font-size:.8rem;color:var(--text-muted);">Balance: <strong class="mono" id="topbarBalance">—</strong></span></div>
+    </div>
+    <div class="page-body">
+      <div style="background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.25);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:20px;font-size:.84rem;color:var(--warning);display:flex;align-items:center;gap:10px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        A minimum balance of <strong style="margin:0 3px;">$10.00</strong> is required to copy any trader.
+      </div>
+      <div id="activeCopiesSection" style="display:none;margin-bottom:24px;">
+        <div class="section-title" style="margin-bottom:12px;">Your Active Copies</div>
+        <div id="activeCopiesList"></div>
+      </div>
+      <div class="section-title" style="margin-bottom:14px;">Available Traders</div>
+      <div class="traders-grid" id="tradersGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="copy-modal-overlay" id="copyModal">
+  <div class="copy-modal">
+    <h3 id="copyModalTitle">Copy Trader</h3>
+    <p class="sub" id="copyModalSub">Set your allocation amount</p>
+    <input type="number" class="alloc-input" id="allocInput" placeholder="$100" min="10" step="10"/>
+    <div class="alloc-hint">Minimum $10 &middot; Available: <strong id="allocAvail">--</strong></div>
+    <div class="alloc-presets">
+      <button class="alloc-preset" onclick="setAlloc(50)">$50</button>
+      <button class="alloc-preset" onclick="setAlloc(100)">$100</button>
+      <button class="alloc-preset" onclick="setAlloc(250)">$250</button>
+      <button class="alloc-preset" onclick="setAlloc(500)">$500</button>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="confirmCopy()">Start Copying</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="closeCopyModal()">Cancel</button>
+  </div>
+</div>
+
+<div class="mobile-nav">
+  <a href="dashboard.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>Home</a>
+  <a href="trade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Trade</a>
+  <a href="copytrade.html" class="active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Copy</a>
+  <a href="deposit.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>Deposit</a>
+  <a href="withdraw.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Withdraw</a>
+  <a href="profile.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Profile</a>
+</div>
+
+<!-- One Trader Limit Modal -->
+<div class="modal-overlay" id="oneCopyMsg" style="display:none;align-items:center;justify-content:center;">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <div class="modal-body" style="padding:28px 24px;">
+      <div style="width:54px;height:54px;border-radius:50%;background:rgba(255,176,32,.12);border:2px solid rgba(255,176,32,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">Already Copying a Trader</h3>
+      <p style="font-size:.84rem;color:var(--text-muted);line-height:1.7;margin-bottom:18px;">You are currently copying <strong id="oneCopyMsgTrader">—</strong>. You can only copy one trader at a time. Please stop copying them first before selecting a new trader.</p>
+      <button class="btn btn-primary btn-full" onclick="document.getElementById('oneCopyMsg').style.display='none'">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Low Balance Modal -->
+<div class="modal-overlay" id="lowBalModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header"><h3>Insufficient Balance</h3><button class="modal-close" onclick="document.getElementById('lowBalModal').style.display='none'">&#x2715;</button></div>
+    <div class="modal-body"><p style="font-size:.88rem;color:var(--text-muted);line-height:1.6;">You need a minimum balance of <strong>$10.00</strong> to copy a trader. Please deposit funds first.</p></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('lowBalModal').style.display='none'">Cancel</button><a href="deposit.html" class="btn btn-primary">Deposit Now</a></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  initTheme();
+  var userBalance  = 0;
+  var currentUser  = null;
+  var activeCopies = {};
+  var prices       = {};
+
+  var TRADERS = [
+    { id:1,  name:'Marcus Elliot',     tag:'Forex Specialist',     winRate:87, trades:1842, monthly:'+12.4%', followers:3241, risk:'Low'    },
+    { id:2,  name:'Sophia Chen',       tag:'Crypto & Forex',       winRate:82, trades:2310, monthly:'+9.8%',  followers:2187, risk:'Medium' },
+    { id:3,  name:'Micheal Robertson', tag:'Scalping Expert',      winRate:79, trades:4502, monthly:'+18.2%', followers:1654, risk:'High'   },
+    { id:4,  name:'Lena Hartmann',     tag:'Swing Trader',         winRate:84, trades:987,  monthly:'+7.6%',  followers:908,  risk:'Low'    },
+    { id:5,  name:'Rafael Torres',     tag:'Crypto Specialist',    winRate:76, trades:3120, monthly:'+22.1%', followers:4502, risk:'High'   },
+    { id:6,  name:'Kirk Bonde',        tag:'Long-Term Strategist', winRate:91, trades:654,  monthly:'+5.3%',  followers:1122, risk:'Low'    },
+    { id:7,  name:'Dmitri Volkov',     tag:'Algorithmic Trader',   winRate:88, trades:7830, monthly:'+14.7%', followers:6341, risk:'Medium' },
+    { id:8,  name:'Priya Nair',        tag:'Gold & Commodities',   winRate:80, trades:1203, monthly:'+8.9%',  followers:743,  risk:'Medium' },
+    { id:9,  name:'Carlos Mendez',     tag:'News-Based Trading',   winRate:74, trades:2891, monthly:'+16.5%', followers:2019, risk:'High'   },
+    { id:10, name:'Isabelle Fontaine', tag:'Conservative Growth',  winRate:93, trades:421,  monthly:'+4.1%',  followers:512,  risk:'Low'    }
+  ];
+
+  var ACCENT_COLORS = ['#00d4aa','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#10b981','#f97316','#06b6d4','#ec4899','#84cc16'];
+  var RISK_CLASS = { Low:'badge-profit', Medium:'badge-pending', High:'badge-loss' };
+
+  function renderTraders() {
+    document.getElementById('tradersGrid').innerHTML = TRADERS.map(function(t) {
+      var initials = t.name.split(' ').map(function(w){ return w[0]; }).join('').substring(0,2);
+      var col      = ACCENT_COLORS[(t.id-1) % ACCENT_COLORS.length];
+      var rc       = RISK_CLASS[t.risk] || 'badge-neutral';
+      var isActive = activeCopies[t.name];
+      return '<div class="trader-card">'+
+        '<div class="trader-header">'+
+          '<div class="trader-avatar" style="color:'+col+';border-color:'+col+'55;background:'+col+'18;">'+initials+'</div>'+
+          '<div><div class="trader-name">'+t.name+'</div><div class="trader-tag">'+t.tag+'</div></div>'+
+        '</div>'+
+        '<div class="trader-stats">'+
+          '<div class="trader-stat"><div class="val pnl-positive">'+t.monthly+'</div><div class="lbl">Monthly</div></div>'+
+          '<div class="trader-stat"><div class="val">'+t.trades.toLocaleString()+'</div><div class="lbl">Trades</div></div>'+
+          '<div class="trader-stat"><div class="val"><span class="badge '+rc+'" style="font-size:.62rem;">'+t.risk+'</span></div><div class="lbl">Risk</div></div>'+
+        '</div>'+
+        '<div class="wr-label"><span style="color:var(--text-muted);">Win Rate</span><span style="font-family:var(--font-m);font-weight:700;color:var(--accent);">'+t.winRate+'%</span></div>'+
+        '<div class="wr-bar"><div class="wr-fill" style="width:'+t.winRate+'%"></div></div>'+
+        '<div style="font-size:.73rem;color:var(--text-muted);margin-bottom:12px;">'+t.followers.toLocaleString()+' followers</div>'+
+        (isActive
+          ? '<button class="copy-btn" style="background:rgba(231,76,60,.1);color:#e74c3c;border:1px solid rgba(231,76,60,.25);" data-name="'+t.name+'" onclick="promptStopCopy(this.dataset.name)">Stop Copying</button>'
+          : '<button class="copy-btn" data-name="'+t.name+'" onclick="handleCopy(this.dataset.name)">Copy Trader</button>'
+        )+
+      '</div>';
+    }).join('');
+  }
+
+  function renderActiveCopies() {
+    var section = document.getElementById('activeCopiesSection');
+    var list    = document.getElementById('activeCopiesList');
+    var keys    = Object.keys(activeCopies);
+    if (keys.length === 0) { section.style.display='none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = keys.map(function(name) {
+      var c=activeCopies[name]; var pnl=c.pnl||0; var pnlClass=pnl>=0?'pnl-positive':'pnl-negative';
+      return '<div class="active-copy-card">'+
+        '<div class="active-copy-info"><div class="name">'+name+'</div><div class="meta">Allocated: '+fmtCurrency(c.allocation)+'</div></div>'+
+        '<div class="active-copy-pnl '+pnlClass+'">'+(pnl>=0?'+':'')+fmtCurrency(pnl)+'</div>'+
+        '<button class="stop-copy-btn" data-name="'+name+'" onclick="promptStopCopy(this.dataset.name)">Stop</button>'+
+      '</div>';
+    }).join('');
+  }
+
+  var _pendingTraderName = null;
+
+  function handleCopy(name) {
+    if (userBalance < 10) { document.getElementById('lowBalModal').style.display='flex'; return; }
+    // One trader limit
+    var activeKeys = Object.keys(activeCopies);
+    if (activeKeys.length > 0) {
+      document.getElementById('oneCopyMsgTrader').textContent = activeKeys[0];
+      document.getElementById('oneCopyMsg').style.display = 'flex';
+      return;
+    }
+    _pendingTraderName = name;
+    document.getElementById('copyModalTitle').textContent = 'Copy '+name;
+    document.getElementById('copyModalSub').textContent   = 'Choose how much to allocate to this trader.';
+    document.getElementById('allocInput').value           = '';
+    document.getElementById('allocAvail').textContent     = fmtCurrency(userBalance);
+    document.getElementById('copyModal').classList.add('active');
+  }
+
+  function setAlloc(amount) { document.getElementById('allocInput').value = amount; }
+
+  function closeCopyModal() { document.getElementById('copyModal').classList.remove('active'); _pendingTraderName = null; }
+
+  async function confirmCopy() {
+    var amount = parseFloat(document.getElementById('allocInput').value);
+    if (!amount || amount < 10) { showToast('Minimum allocation is $10.','error'); return; }
+    if (!_pendingTraderName) { closeCopyModal(); return; }
+    var name = _pendingTraderName;
+    closeCopyModal();
+    try {
+      await db.collection('copyPositions').doc(currentUser.uid+'_'+name.replace(/ /g,'_')).set({
+        userId:currentUser.uid, traderName:name, allocation:amount, pnl:0,
+        startedAt:firebase.firestore.FieldValue.serverTimestamp(), status:'active'
+      });
+      activeCopies[name] = { allocation:amount, pnl:0 };
+      startCopyTrading(name, currentUser.uid, amount, prices);
+      renderTraders(); renderActiveCopies();
+      showToast('Now copying '+name+' with '+fmtCurrency(amount));
+    } catch(e) { showToast('Error starting copy trade.','error'); console.error(e); }
+  }
+
+  async function promptStopCopy(name) {
+    if (!confirm('Stop copying '+name+'? Open copy trades run until TP/SL.')) return;
+    try {
+      stopCopyTrading(name, currentUser.uid);
+      await db.collection('copyPositions').doc(currentUser.uid+'_'+name.replace(/ /g,'_')).update({ status:'stopped', stoppedAt:firebase.firestore.FieldValue.serverTimestamp() });
+      delete activeCopies[name];
+      renderTraders(); renderActiveCopies();
+      showToast('Stopped copying '+name+'.');
+    } catch(e) { showToast('Error stopping copy trade.','error'); }
+  }
+
+  async function updateCopyPnL() {
+    if (!currentUser) return;
+    try {
+      var snap = await db.collection('trades').where('userId','==',currentUser.uid).where('isCopyTrade','==',true).where('status','==','open').get();
+      var pnlMap = {};
+      snap.forEach(function(d){ var t=d.data(); var pnl=calcPnL(t,prices[t.symbol]||t.entryPrice); pnlMap[t.traderName]=(pnlMap[t.traderName]||0)+pnl; });
+      Object.keys(activeCopies).forEach(function(n){ activeCopies[n].pnl=pnlMap[n]||0; });
+      renderActiveCopies();
+    } catch(e) {}
+  }
+
+  requireAuth(async function(user) {
+    currentUser = user;
+    var s=await db.collection('users').doc(user.uid).get(); var ud=s.data();
+    userBalance = ud.balance||0;
+    document.getElementById('sidebarName').textContent   = ud.fullName||'Trader';
+    if (typeof smartsupp==='function') { smartsupp('name',ud.fullName||'Trader'); smartsupp('email',ud.email||''); }
+    document.getElementById('sidebarUid').textContent    = ud.accountId||'--';
+    document.getElementById('sidebarAvatar').textContent = (ud.fullName||'T')[0].toUpperCase();
+    document.getElementById('topbarBalance').textContent = fmtCurrency(userBalance);
+    var cpSnap = await db.collection('copyPositions').where('userId','==',user.uid).where('status','==','active').get();
+    cpSnap.forEach(function(d){ var c=d.data(); activeCopies[c.traderName]={allocation:c.allocation,pnl:0}; startCopyTrading(c.traderName,user.uid,c.allocation,prices); });
+    startPriceRefresh(prices, function(){ updateCopyPnL(); });
+    renderTraders(); renderActiveCopies();
+  });
+</script>
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'c0c38f8476efd1d3fc7bd4507febb581ebec7846';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+<!-- Google Translate: widget init & language persistence -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({
+      pageLanguage:'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+
+    // Watch for language changes and save to localStorage
+    function ntWatchLang(){
+      var sel = document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change', function(){
+          localStorage.setItem('nt-lang', sel.value);
+          document.cookie = 'googtrans=/en/' + sel.value + '; path=/';
+        });
+        // Apply saved language on load
+        var saved = localStorage.getItem('nt-lang');
+        if(saved && saved !== 'en' && sel.value !== saved){
+          sel.value = saved;
+          sel.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(ntWatchLang, 300);
+      }
+    }
+    ntWatchLang();
+
+    // Move widget into the nav slot once ready
+    function ntMountWidget(){
+      var wrap = document.getElementById('nt-translate-wrap');
+      var gadget = document.querySelector('.goog-te-gadget');
+      if(wrap && gadget){ wrap.appendChild(gadget); }
+      else { setTimeout(ntMountWidget, 300); }
+    }
+    ntMountWidget();
+  }
+</script>
+</body>
+</html>

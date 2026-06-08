@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Admin Panel</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .admin-layout { display:flex; min-height:100vh; }
+    .admin-sidebar {
+      width:220px; background:var(--surface); border-right:1px solid var(--border);
+      display:flex; flex-direction:column; flex-shrink:0; position:sticky; top:0; height:100vh; overflow-y:auto;
+    }
+    .admin-content { flex:1; overflow-x:hidden; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .user-balance-edit { display:flex; gap:8px; align-items:center; margin-top:6px; }
+    .user-balance-edit input { width:120px; }
+    .price-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border-lt); }
+    .price-row:last-child { border-bottom:none; }
+    .price-row .sym { font-family:var(--font-h); font-weight:700; font-size:.9rem; min-width:100px; }
+    .price-row input { width:140px; }
+    .admin-nav-link {
+      display:flex; align-items:center; gap:10px; padding:9px 14px;
+      border-radius:var(--r-sm); color:var(--text-muted); font-size:.85rem;
+      font-weight:500; text-decoration:none; transition:all .18s; margin-bottom:2px;
+      cursor:pointer; border:none; background:none; width:100%; text-align:left;
+    }
+    .admin-nav-link:hover { background:var(--surface-2); color:var(--text); }
+    .admin-nav-link.active { background:rgba(255,176,32,.1); color:var(--warning); font-weight:600; }
+    .admin-nav-link svg { flex-shrink:0; }
+
+    /* Support ticket styles */
+    .ticket-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; margin-bottom:12px; }
+    .ticket-card__header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+    .ticket-card__subject { font-weight:700; font-size:.92rem; }
+    .ticket-card__meta { font-size:.75rem; color:var(--text-muted); margin-bottom:10px; }
+    .ticket-card__body { font-size:.85rem; color:var(--text-md); margin-bottom:12px; line-height:1.5; }
+    .ticket-reply-box { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 12px; margin-top:8px; font-size:.82rem; }
+    .ticket-reply-box textarea { width:100%; border:none; background:transparent; color:var(--text); font-family:inherit; font-size:.85rem; resize:vertical; min-height:60px; outline:none; }
+
+    /* Mobile nav */
+    .admin-mobile-nav {
+      display:none; position:fixed; bottom:0; left:0; right:0;
+      background:var(--surface); border-top:1px solid var(--border);
+      z-index:100; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    }
+    .admin-mobile-nav-inner {
+      display:flex; min-width:max-content; width:100%; padding:4px 0;
+    }
+    .admin-mob-btn {
+      flex:none; min-width:64px; padding:5px 8px; border:none; background:none;
+      font-size:.58rem; color:var(--text-muted); cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:2px;
+      white-space:nowrap;
+    }
+    .admin-mob-btn.active { color:var(--warning); }
+    .admin-mob-btn svg { flex-shrink:0; }
+
+    @media(max-width:768px){
+      .admin-sidebar { display:none; }
+      .admin-mobile-nav { display:block; }
+      .admin-content { padding-bottom:70px; }
+    }
+  </style>
+  <!-- Google Translate: restore saved language -->
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en'){
+        // Inject the cookie Google Translate reads on load
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+      }
+    })();
+  </script>
+  <!-- Google Translate widget (hidden element; widget is triggered via JS) -->
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{
+      background:var(--surface-2,#f4f4f4)!important;border:1px solid var(--border,#ddd)!important;
+      border-radius:6px!important;padding:4px 8px!important;font-size:.78rem!important;
+      display:inline-flex!important;align-items:center!important;cursor:pointer!important;
+      gap:4px!important;
+    }
+    .goog-te-gadget-simple span{color:var(--text,#222)!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+    #nt-translate-wrap{display:inline-flex;align-items:center;}
+  </style>
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('nt-theme')||'light');</script>
+
+<!-- SVG icon sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="ic-overview"    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+  <symbol id="ic-users"       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="ic-balance"     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></symbol>
+  <symbol id="ic-deposit"     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="ic-withdraw"    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="ic-trades"      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+  <symbol id="ic-prices"      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6"  y1="20" x2="6"  y2="14"/></symbol>
+  <symbol id="ic-support"     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="ic-logout"      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <symbol id="ic-shield"      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="ic-trash"       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+</svg>
+
+<div class="admin-layout">
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">N</div>
+      <div>
+        <div class="brand-name">Nex<span>Trade</span></div>
+        <div style="font-size:.65rem;color:var(--warning);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Admin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Panel</div>
+      <button class="admin-nav-link active" id="anav-overview"    onclick="switchTab('overview')"><svg width="15" height="15"><use href="#ic-overview"/></svg> Overview</button>
+      <button class="admin-nav-link"        id="anav-users"       onclick="switchTab('users')"><svg width="15" height="15"><use href="#ic-users"/></svg> Users</button>
+      <button class="admin-nav-link"        id="anav-balances"    onclick="switchTab('balances')"><svg width="15" height="15"><use href="#ic-balance"/></svg> Balances</button>
+      <button class="admin-nav-link"        id="anav-deposits"    onclick="switchTab('deposits')"><svg width="15" height="15"><use href="#ic-deposit"/></svg> Deposits</button>
+      <button class="admin-nav-link"        id="anav-withdrawals" onclick="switchTab('withdrawals')"><svg width="15" height="15"><use href="#ic-withdraw"/></svg> Withdrawals</button>
+      <button class="admin-nav-link"        id="anav-wallets"     onclick="switchTab('wallets')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20z"/></svg> Wallets</button>
+      <button class="admin-nav-link"        id="anav-kyc"         onclick="switchTab('kyc')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg> KYC</button>
+      <button class="admin-nav-link"        id="anav-copyconfig"  onclick="switchTab('copyconfig')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Copy Config</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="font-size:.74rem;color:var(--text-muted);margin-bottom:10px;" id="adminEmailLabel">—</div>
+      <span id="nt-translate-wrap" style="display:inline-flex;align-items:center;margin-bottom:6px;width:100%;"></span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="toggleTheme()" id="themeToggle" class="theme-btn" style="flex:0 0 36px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></button>
+        <button onclick="adminLogout()" class="btn btn-ghost btn-full btn-sm" style="color:var(--loss);display:flex;align-items:center;gap:5px;"><svg width="14" height="14"><use href="#ic-logout"/></svg> Out</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Admin Main -->
+  <div class="admin-content">
+    <div class="topbar">
+      <div class="topbar-title" style="display:flex;align-items:center;gap:8px;"><svg width="16" height="16"><use href="#ic-shield"/></svg> Admin Panel <span class="admin-badge" style="margin-left:6px;font-size:.7rem;">ADMIN</span></div>
+      <div class="topbar-actions"><span id="adminTopEmail" style="font-size:.78rem;color:var(--text-muted);"></span></div>
+    </div>
+
+    <div style="padding:20px 24px;">
+
+      <!-- ══ OVERVIEW ══ -->
+      <div class="tab-panel active" id="tab-overview">
+        <div class="stats-grid" id="overviewStats" style="margin-bottom:20px;">
+          <div class="stat-card"><div class="stat-card__label">Total Users</div><div class="stat-card__value" id="ovUsers">—</div></div>
+          <div class="stat-card"><div class="stat-card__label">Pending Deposits</div><div class="stat-card__value" id="ovDeposits" style="color:var(--warning);">—</div></div>
+          <div class="stat-card"><div class="stat-card__label">Pending Withdrawals</div><div class="stat-card__value" id="ovWithdrawals" style="color:var(--warning);">—</div></div>
+          <div class="stat-card" style="cursor:pointer;" onclick="switchTab('kyc')"><div class="stat-card__label">KYC Pending</div><div class="stat-card__value" id="ovKycPending" style="color:var(--warning);">—</div><div class="stat-card__sub">Click to review</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Recent Transactions</h3></div>
+          <div class="table-wrapper"><table>
+            <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="overviewTxBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ══ USERS ══ -->
+      <div class="tab-panel" id="tab-users">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group" style="margin:0;flex:1;"><label class="form-label">Search</label><input class="form-control" id="userSearch" placeholder="Name or email..." oninput="renderUsers()"/></div>
+          <button class="btn btn-primary" onclick="openAddAdminModal()">+ Add Admin</button>
+        </div>
+        <div class="card"><div class="table-wrapper"><table>
+          <thead><tr><th>Name</th><th>Email</th><th>Account ID</th><th>Balance</th><th>Joined</th><th>KYC</th><th>Role</th><th>Action</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ BALANCES ══ -->
+      <div class="tab-panel" id="tab-balances">
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px;background:var(--surface-2);padding:12px;border-radius:var(--r-sm);border:1px solid var(--border);">
+          Manually set or adjust any user's account balance. This is separate from deposit requests.
+        </p>
+        <div class="card"><div class="table-wrapper"><table>
+          <thead><tr><th>Name</th><th>Account ID</th><th>Current Balance</th><th>Set New Balance</th><th>Action</th></tr></thead>
+          <tbody id="balancesBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ DEPOSITS ══ -->
+      <div class="tab-panel" id="tab-deposits">
+        <div class="card"><div class="table-wrapper"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="depositsBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ WITHDRAWALS ══ -->
+      <div class="tab-panel" id="tab-withdrawals">
+        <div class="card"><div class="table-wrapper"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Address</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="withdrawalsBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ TRADES ══ -->
+      <!-- ══ WALLETS ══ -->
+      <div class="tab-panel" id="tab-wallets">
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px;background:var(--surface-2);padding:12px;border-radius:var(--r-sm);border:1px solid var(--border);">
+          Set the wallet addresses for each cryptocurrency. These addresses will be shown to clients on the deposit page. QR codes are auto-generated from the address.
+        </p>
+        <div class="card">
+          <div class="card-header"><h3>Crypto Wallet Addresses</h3></div>
+          <div class="card-body" id="walletAdminBody">
+            <div style="display:flex;flex-direction:column;gap:16px;" id="walletFields"></div>
+            <button class="btn btn-primary" style="margin-top:18px;" onclick="saveWallets()">Save All Wallet Addresses</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ COPY CONFIG ══ -->
+      <div class="tab-panel" id="tab-copyconfig">
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px;background:var(--surface-2);padding:12px;border-radius:var(--r-sm);border:1px solid var(--border);">
+          Set the maximum daily trades and risk-to-reward ratio for each user's copy trading. Default is <strong>5 trades/day</strong> and <strong>1:1 RR</strong>. Changes take effect immediately on the next trade.
+        </p>
+        <div class="card"><div class="table-wrapper"><table>
+          <thead><tr><th>Name</th><th>Account ID</th><th>Max Trades/Day</th><th>RR Ratio</th><th>Risk %</th><th>Action</th></tr></thead>
+          <tbody id="copyConfigBody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- ══ KYC ══ -->
+      <div class="tab-panel" id="tab-kyc">
+
+        <!-- Auto-verify toggle card -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-header" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <h3 style="margin:0;flex:1;">KYC Settings</h3>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:4px 0;">
+              <div>
+                <div style="font-weight:600;font-size:.88rem;color:var(--text);margin-bottom:3px;">Auto-Verify on Upload</div>
+                <div style="font-size:.78rem;color:var(--text-muted);max-width:420px;">
+                  When enabled, any KYC document submitted by any user will be automatically approved without manual review.
+                </div>
+              </div>
+              <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0;">
+                <input type="checkbox" id="autoVerifyToggle" onchange="saveAutoVerifySetting()" style="opacity:0;width:0;height:0;position:absolute;">
+                <span id="autoVerifySlider" style="
+                  display:inline-flex;align-items:center;
+                  width:48px;height:26px;border-radius:13px;
+                  background:var(--border);transition:background .2s;
+                  padding:3px;cursor:pointer;
+                ">
+                  <span id="autoVerifyThumb" style="
+                    width:20px;height:20px;border-radius:50%;
+                    background:#fff;transition:transform .2s;
+                    transform:translateX(0);box-shadow:0 1px 4px rgba(0,0,0,.2);
+                  "></span>
+                </span>
+                <span id="autoVerifyLabel" style="margin-left:10px;font-size:.82rem;font-weight:600;color:var(--text-muted);">Off</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- KYC submissions table -->
+        <div class="card">
+          <div class="card-header" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <h3 style="margin:0;flex:1;">KYC Submissions</h3>
+            <select class="form-control" id="kycFilterStatus" onchange="renderKycTable()" style="max-width:160px;">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Account ID</th>
+                  <th>ID Type</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th>Documents</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="kycTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Nav — scrollable so all tabs are reachable -->
+<div class="admin-mobile-nav" id="adminMobileNav">
+  <div class="admin-mobile-nav-inner">
+    <button class="admin-mob-btn active" id="mob-overview"    onclick="switchTab('overview')"><svg width="18" height="18"><use href="#ic-overview"/></svg>Overview</button>
+    <button class="admin-mob-btn"        id="mob-users"       onclick="switchTab('users')"><svg width="18" height="18"><use href="#ic-users"/></svg>Users</button>
+    <button class="admin-mob-btn"        id="mob-balances"    onclick="switchTab('balances')"><svg width="18" height="18"><use href="#ic-balance"/></svg>Balances</button>
+    <button class="admin-mob-btn"        id="mob-deposits"    onclick="switchTab('deposits')"><svg width="18" height="18"><use href="#ic-deposit"/></svg>Deposits</button>
+    <button class="admin-mob-btn"        id="mob-withdrawals" onclick="switchTab('withdrawals')"><svg width="18" height="18"><use href="#ic-withdraw"/></svg>Withdrawals</button>
+    <button class="admin-mob-btn"        id="mob-wallets"     onclick="switchTab('wallets')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20z"/></svg>Wallets</button>
+    <button class="admin-mob-btn"        id="mob-copyconfig"  onclick="switchTab('copyconfig')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Copy Config</button>
+    <button class="admin-mob-btn"        id="mob-kyc"         onclick="switchTab('kyc')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>KYC</button>
+  </div>
+</div>
+
+
+<!-- KYC Image Viewer Modal -->
+<div class="modal-overlay" id="kycImgModal" style="display:none;align-items:flex-start;padding:40px 16px;overflow-y:auto;">
+  <div class="modal" style="max-width:720px;width:100%;">
+    <div class="modal-header">
+      <h3 id="kycImgModalTitle">KYC Documents</h3>
+      <button class="modal-close" onclick="document.getElementById('kycImgModal').style.display='none'">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <div id="kycImgUserInfo" style="font-size:.85rem;color:var(--text-muted);flex:1;"></div>
+        <span id="kycImgStatusBadge" class="badge badge-neutral">--</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Front Side</div>
+          <div style="border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;background:var(--bg);min-height:160px;display:flex;align-items:center;justify-content:center;">
+            <img id="kycImgFront" src="" alt="Front" style="width:100%;max-height:260px;object-fit:contain;display:none;"/>
+            <div id="kycImgFrontEmpty" style="font-size:.78rem;color:var(--text-muted);padding:24px;">Not uploaded</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Back Side</div>
+          <div style="border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;background:var(--bg);min-height:160px;display:flex;align-items:center;justify-content:center;">
+            <img id="kycImgBack" src="" alt="Back" style="width:100%;max-height:260px;object-fit:contain;display:none;"/>
+            <div id="kycImgBackEmpty" style="font-size:.78rem;color:var(--text-muted);padding:24px;">Not uploaded</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Review Note (optional)</div>
+        <textarea id="kycReviewNote" class="form-control" rows="2" placeholder="e.g. Documents accepted / Reason for rejection..." style="margin-bottom:0;resize:vertical;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="setKycStatus('verified')" style="background:#00D4AA;border-color:#00D4AA;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve
+      </button>
+      <button class="btn btn-danger" onclick="setKycStatus('rejected')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Reject
+      </button>
+      <button class="btn btn-ghost" onclick="document.getElementById('kycImgModal').style.display='none'" style="margin-left:auto;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Admin Modal -->
+<div class="modal-overlay" id="addAdminModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header"><h3>Add Admin Account</h3><button class="modal-close" onclick="closeModal('addAdminModal')">&#x2715;</button></div>
+    <div class="modal-body">
+      <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:16px;">The user must already have a NexTrade account. Enter their email to grant admin access.</p>
+      <div class="form-group"><label class="form-label">User Email</label><input class="form-control" id="adminGrantEmail" placeholder="user@email.com"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addAdminModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="grantAdmin()">Grant Admin Access</button>
+    </div>
+  </div>
+</div>
+
+<!-- Force Close Trade Modal -->
+<div class="modal-overlay" id="forceCloseModal" style="display:none;">
+  <div class="modal">
+    <div class="modal-header"><h3>Force Close Trade</h3><button class="modal-close" onclick="closeModal('forceCloseModal')">&#x2715;</button></div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:14px;">This will close the trade at the current price and update the user's balance.</p>
+      <div id="forceCloseInfo"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('forceCloseModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmForceClose()">Force Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay" style="position:fixed;display:flex;">
+  <div class="spinner"></div><div class="loading-text">Loading admin panel...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  initTheme();
+  let allUsers = [], adminPrices = {}, forceCloseData = null;
+
+  requireAdmin(async (user, adminData) => {
+    document.getElementById('adminEmailLabel').textContent = user.email;
+    document.getElementById('adminTopEmail').textContent   = user.email;
+    await Promise.all([loadOverview(), loadUsers()]);
+    document.getElementById('loadingOverlay').style.display = 'none';
+  });
+
+  // ── TABS ──
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-link').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('.admin-mob-btn').forEach(a => a.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    document.getElementById('anav-'+tab)?.classList.add('active');
+    document.getElementById('mob-'+tab)?.classList.add('active');
+    if (tab==='deposits')    loadDeposits();
+    if (tab==='withdrawals') loadWithdrawals();
+    if (tab==='balances')    renderBalances();
+    if (tab==='wallets')     loadWalletsAdmin();
+    if (tab==='kyc')         loadKyc();
+    if (tab==='copyconfig')  loadCopyConfig();
+  }
+
+  // ── OVERVIEW ──
+  async function loadOverview() {
+    const [uSnap, tSnap, txAllSnap, kycSnap] = await Promise.all([
+      db.collection('users').get(),
+      db.collection('trades').get(),
+      db.collection('transactions').get(),
+      db.collection('kyc').where('status','==','pending').get(),
+    ]);
+    const allTx = txAllSnap.docs.map(d => d.data());
+    const pendingDep = allTx.filter(t => t.type==='deposit'    && t.status==='pending').length;
+    const pendingWd  = allTx.filter(t => t.type==='withdrawal' && t.status==='pending').length;
+
+    document.getElementById('ovUsers').textContent       = uSnap.size;
+    document.getElementById('ovDeposits').textContent    = pendingDep;
+    document.getElementById('ovWithdrawals').textContent = pendingWd;
+    document.getElementById('ovKycPending').textContent  = kycSnap.size;
+
+    const userMap = {};
+    uSnap.forEach(d => { userMap[d.id] = d.data(); });
+
+    const recent = txAllSnap.docs
+      .map(d => ({ id:d.id, ...d.data() }))
+      .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0))
+      .slice(0, 10);
+
+    document.getElementById('overviewTxBody').innerHTML = recent.map(t => {
+      const u = userMap[t.userId];
+      const stClass = t.status==='approved'?'badge-profit':t.status==='rejected'?'badge-loss':'badge-pending';
+      return `<tr>
+        <td style="font-size:.82rem;">${u?.fullName||'—'}</td>
+        <td><span class="badge badge-info">${t.type}</span></td>
+        <td class="mono">${fmtCurrency(t.amount)}</td>
+        <td><span class="badge ${stClass}">${t.status}</span></td>
+        <td style="font-size:.76rem;color:var(--text-muted);">${fmtDate(t.createdAt)}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">No transactions yet.</td></tr>';
+  }
+
+  // ── USERS ──
+  async function loadUsers() {
+    const snap = await db.collection('users').get();
+    const adminSnap = await db.collection('admins').get();
+    const adminIds = new Set(adminSnap.docs.map(d => d.id));
+    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data(), isAdmin: adminIds.has(d.id) }));
+    renderUsers();
+  }
+
+  function renderUsers() {
+    const search = document.getElementById('userSearch')?.value.toLowerCase()||'';
+    const list = allUsers.filter(u =>
+      !search || u.fullName?.toLowerCase().includes(search) || u.email?.toLowerCase().includes(search)
+    );
+    document.getElementById('usersBody').innerHTML = list.map(u => {
+      const ks = u.kycStatus || 'none';
+      const kycBadge = ks==='verified'
+        ? '<span class="badge" style="background:rgba(0,212,170,.15);color:#00D4AA;border:1px solid rgba(0,212,170,.3);font-size:.66rem;">Verified</span>'
+        : ks==='pending'
+        ? '<span class="badge" style="background:rgba(255,176,32,.15);color:var(--warning);border:1px solid rgba(255,176,32,.3);font-size:.66rem;">Pending</span>'
+        : ks==='rejected'
+        ? '<span class="badge badge-loss" style="font-size:.66rem;">Rejected</span>'
+        : '<span class="badge badge-neutral" style="font-size:.66rem;">None</span>';
+      return `<tr>
+        <td><strong>${u.fullName||'—'}</strong></td>
+        <td style="font-size:.8rem;color:var(--text-muted);">${u.email||'—'}</td>
+        <td class="mono" style="font-size:.8rem;">${u.accountId||'—'}</td>
+        <td class="mono pnl-positive">${fmtCurrency(u.balance)}</td>
+        <td style="font-size:.76rem;color:var(--text-muted);">${fmtDate(u.createdAt)}</td>
+        <td>${kycBadge}</td>
+        <td>${u.isAdmin?'<span class="admin-badge">Admin</span>':'<span class="badge badge-neutral">User</span>'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.fullName||''}')" title="Delete user" style="display:flex;align-items:center;gap:4px;"><svg width="13" height="13"><use href="#ic-trash"/></svg></button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">No users found.</td></tr>';
+  }
+
+  async function deleteUser(uid, name) {
+    if (!confirm(`Delete ${name}'s account? This cannot be undone.`)) return;
+    await db.collection('users').doc(uid).delete();
+    showToast(`${name} deleted.`);
+    await loadUsers();
+    await loadOverview();
+  }
+
+  // ── BALANCES ──
+  function renderBalances() {
+    document.getElementById('balancesBody').innerHTML = allUsers.map(u => `
+      <tr>
+        <td><strong>${u.fullName||'—'}</strong></td>
+        <td class="mono" style="font-size:.8rem;">${u.accountId||'—'}</td>
+        <td class="mono pnl-positive">${fmtCurrency(u.balance)}</td>
+        <td><input type="number" class="form-control" id="bal_${u.id}" placeholder="${(u.balance||0).toFixed(2)}" style="width:130px;padding:6px 10px;font-size:.85rem;"/></td>
+        <td><button class="btn btn-primary btn-sm" onclick="updateBalance('${u.id}')">Set</button></td>
+      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">No users.</td></tr>';
+  }
+
+  async function updateBalance(uid) {
+    const input = document.getElementById('bal_'+uid);
+    const val   = parseFloat(input.value);
+    if (isNaN(val)) return showToast('Enter a valid amount.','error');
+    await db.collection('users').doc(uid).update({ balance: val });
+    showToast('Balance updated to ' + fmtCurrency(val));
+    const u = allUsers.find(x => x.id===uid);
+    if (u) u.balance = val;
+    input.value = '';
+    input.placeholder = val.toFixed(2);
+  }
+
+  // ── DEPOSITS — approving automatically credits the user's balance ──
+  async function loadDeposits() {
+    const snap = await db.collection('transactions').get();
+    const userMap = {};
+    allUsers.forEach(u => userMap[u.id] = u);
+
+    const deposits = snap.docs
+      .map(d => ({ id:d.id, ...d.data() }))
+      .filter(t => t.type === 'deposit')
+      .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+
+    document.getElementById('depositsBody').innerHTML = deposits.map(t => {
+      const u = userMap[t.userId];
+      const stClass = t.status==='approved'?'badge-profit':t.status==='rejected'?'badge-loss':'badge-pending';
+      const actions = t.status==='pending'
+        ? `<div style="display:flex;gap:4px;">
+            <button class="btn btn-primary btn-sm" onclick="approveDeposit('${t.id}','${t.userId}',${t.amount})">Approve</button>
+            <button class="btn btn-danger btn-sm"  onclick="rejectDeposit('${t.id}')">Reject</button>
+           </div>`
+        : `<span class="badge ${stClass}">${t.status}</span>`;
+      return `<tr>
+        <td style="font-size:.82rem;">${u?.fullName||'—'}</td>
+        <td class="mono pnl-positive">${fmtCurrency(t.amount)}</td>
+        <td style="text-transform:capitalize;">${t.method}</td>
+        <td style="font-size:.78rem;color:var(--text-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;">${t.reference||'—'}</td>
+        <td><span class="badge ${stClass}">${t.status}</span></td>
+        <td style="font-size:.75rem;color:var(--text-muted);">${fmtDate(t.createdAt)}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No deposit requests.</td></tr>';
+  }
+
+  // FIX #1: Approve deposit AND automatically add amount to user's balance
+  async function approveDeposit(txId, userId, amount) {
+    try {
+      // 1. Get current balance
+      const userSnap = await db.collection('users').doc(userId).get();
+      const currentBalance = userSnap.data()?.balance || 0;
+      const newBalance = currentBalance + amount;
+
+      // 2. Update transaction status and user balance in one go
+      const batch = db.batch();
+      batch.update(db.collection('transactions').doc(txId), {
+        status: 'approved',
+        processedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      batch.update(db.collection('users').doc(userId), {
+        balance: newBalance
+      });
+      await batch.commit();
+
+      // 3. Update local cache so Balances tab reflects it immediately
+      const u = allUsers.find(x => x.id === userId);
+      if (u) u.balance = newBalance;
+
+      showToast(`Deposit approved. $${amount.toFixed(2)} added to user's balance.`);
+      loadDeposits();
+      loadOverview();
+    } catch(e) {
+      console.error('Approve deposit error:', e);
+      showToast('Error approving deposit.', 'error');
+    }
+  }
+
+  async function rejectDeposit(txId) {
+    try {
+      await db.collection('transactions').doc(txId).update({
+        status: 'rejected',
+        processedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast('Deposit rejected.');
+      loadDeposits();
+      loadOverview();
+    } catch(e) {
+      showToast('Error rejecting deposit.', 'error');
+    }
+  }
+
+  // ── WITHDRAWALS ──
+  async function loadWithdrawals() {
+    const snap = await db.collection('transactions').get();
+    const userMap = {};
+    allUsers.forEach(u => userMap[u.id] = u);
+
+    const withdrawals = snap.docs
+      .map(d => ({ id:d.id, ...d.data() }))
+      .filter(t => t.type === 'withdrawal')
+      .sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+
+    document.getElementById('withdrawalsBody').innerHTML = withdrawals.map(t => {
+      const u = userMap[t.userId];
+      const stClass = t.status==='approved'?'badge-profit':t.status==='rejected'?'badge-loss':'badge-pending';
+      const actions = t.status==='pending'
+        ? `<div style="display:flex;gap:4px;">
+            <button class="btn btn-primary btn-sm" onclick="updateTxStatus('${t.id}','approved')">Approve</button>
+            <button class="btn btn-danger btn-sm"  onclick="updateTxStatus('${t.id}','rejected')">Reject</button>
+           </div>`
+        : `<span class="badge ${stClass}">${t.status}</span>`;
+      return `<tr>
+        <td style="font-size:.82rem;">${u?.fullName||'—'}</td>
+        <td class="mono">${fmtCurrency(t.amount)}</td>
+        <td style="text-transform:capitalize;">${t.method}</td>
+        <td style="font-size:.78rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;">${t.address||'—'}</td>
+        <td><span class="badge ${stClass}">${t.status}</span></td>
+        <td style="font-size:.75rem;color:var(--text-muted);">${fmtDate(t.createdAt)}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No withdrawal requests.</td></tr>';
+  }
+
+  async function updateTxStatus(txId, status) {
+    await db.collection('transactions').doc(txId).update({ status, processedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    showToast(`Request ${status}.`);
+    loadWithdrawals(); loadOverview();
+  }
+
+  // ── ALL TRADES ──
+  // ── COPY CONFIG ──
+  async function loadCopyConfig() {
+    const snap = await db.collection('users').get();
+    const rows = [];
+    snap.forEach(d => {
+      const u = { id: d.id, ...d.data() };
+      rows.push(u);
+    });
+    rows.sort((a,b) => (a.fullName||'').localeCompare(b.fullName||''));
+    document.getElementById('copyConfigBody').innerHTML = rows.map(u => {
+      const maxTrades = u.copyMaxTrades !== undefined ? u.copyMaxTrades : 2;
+      const rr        = u.copyRR        !== undefined ? u.copyRR        : 1;
+      const risk      = u.copyRisk      !== undefined ? u.copyRisk      : 3;
+      return `<tr>
+        <td style="font-weight:600;">${u.fullName||'—'}</td>
+        <td class="mono" style="font-size:.78rem;">${u.accountId||'—'}</td>
+        <td><input type="number" min="1" max="50" value="${maxTrades}" id="mt_${u.id}" class="form-control" style="width:80px;padding:5px 8px;font-size:.83rem;"/></td>
+        <td>
+          <select id="rr_${u.id}" class="form-control" style="width:100px;padding:5px 8px;font-size:.83rem;">
+            <option value="1"   ${rr==1?'selected':''}>1:1</option>
+            <option value="2"   ${rr==2?'selected':''}>1:2</option>
+            <option value="3"   ${rr==3?'selected':''}>1:3</option>
+            <option value="0.5" ${rr==0.5?'selected':''}>1:0.5</option>
+          </select>
+        </td>
+        <td><input type="number" min="1" max="100" value="${risk}" id="rk_${u.id}" class="form-control" style="width:80px;padding:5px 8px;font-size:.83rem;" placeholder="%"/></td>
+        <td><button class="btn btn-primary btn-sm" onclick="saveCopyConfig('${u.id}')">Save</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">No users found.</td></tr>';
+  }
+
+  async function saveCopyConfig(uid) {
+    const maxTrades = parseInt(document.getElementById('mt_' + uid).value)    || 2;
+    const rr        = parseFloat(document.getElementById('rr_' + uid).value)  || 1;
+    const risk      = parseFloat(document.getElementById('rk_' + uid).value)  || 3;
+    try {
+      await db.collection('users').doc(uid).update({ copyMaxTrades: maxTrades, copyRR: rr, copyRisk: risk });
+      showToast('Copy config saved successfully.');
+    } catch(e) {
+      showToast('Error saving config.', 'error');
+    }
+  }
+
+
+  function openForceClose(tradeId, symbol, type, lot, entry, curPrc, pnl, userId) {
+    forceCloseData = { tradeId, symbol, type, lot, entry, curPrc, pnl, userId };
+    const pnlClass = pnl>=0?'pnl-positive':'pnl-negative';
+    document.getElementById('forceCloseInfo').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.85rem;">
+        <div><span style="color:var(--text-muted);">Symbol</span><br/><strong>${symbol}</strong></div>
+        <div><span style="color:var(--text-muted);">Type</span><br/><strong>${type}</strong></div>
+        <div><span style="color:var(--text-muted);">Entry</span><br/><span class="mono">${fmtPrice(entry,symbol)}</span></div>
+        <div><span style="color:var(--text-muted);">Close Price</span><br/><span class="mono">${fmtPrice(curPrc,symbol)}</span></div>
+        <div style="grid-column:1/-1;"><span style="color:var(--text-muted);">P&amp;L</span><br/><span class="mono ${pnlClass}" style="font-size:1.1rem;">${fmtCurrency(pnl)}</span></div>
+      </div>`;
+    document.getElementById('forceCloseModal').style.display = 'flex';
+  }
+
+  async function confirmForceClose() {
+    if (!forceCloseData) return;
+    const { tradeId, curPrc, pnl, userId } = forceCloseData;
+    await db.collection('trades').doc(tradeId).update({
+      status:'closed', exitPrice:curPrc, profitLoss:pnl,
+      closedAt:firebase.firestore.FieldValue.serverTimestamp(), closedBy:'admin'
+    });
+    const uSnap = await db.collection('users').doc(userId).get();
+    const newBal = (uSnap.data().balance||0) + pnl;
+    await db.collection('users').doc(userId).update({ balance: newBal });
+    showToast('Trade force-closed. Balance updated.');
+    closeModal('forceCloseModal');
+    forceCloseData = null;
+  }
+
+  // ── ADD ADMIN ──
+  function openAddAdminModal() { document.getElementById('addAdminModal').style.display='flex'; }
+  async function grantAdmin() {
+    const email = document.getElementById('adminGrantEmail').value.trim();
+    if (!email) return showToast('Enter an email.','error');
+    const snap = await db.collection('users').where('email','==',email).limit(1).get();
+    if (snap.empty) return showToast('No user found with that email.','error');
+    const uid = snap.docs[0].id;
+    await db.collection('admins').doc(uid).set({ grantedAt: firebase.firestore.FieldValue.serverTimestamp(), email });
+    showToast(`Admin access granted to ${email}.`);
+    closeModal('addAdminModal');
+    await loadUsers();
+  }
+
+
+  // ── WALLETS ──
+  var COINS = [
+    { key:'BTC',  label:'Bitcoin (BTC)' },
+    { key:'ETH',  label:'Ethereum (ETH)' },
+    { key:'LTC',  label:'Litecoin (LTC)' },
+    { key:'BNB',  label:'BNB (BNB)' },
+    { key:'USDT', label:'Tether USDT' }
+  ];
+
+  var currentWalletData = {};
+
+  async function loadWalletsAdmin() {
+    var fields = document.getElementById('walletFields');
+    fields.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.85rem;">Loading wallet addresses...</div>';
+    var snap;
+    try {
+      snap = await db.collection('wallets').doc('addresses').get();
+    } catch(e) {
+      fields.innerHTML = '<div style="padding:16px;background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.25);border-radius:var(--r-sm);color:var(--loss);font-size:.85rem;"><strong>Permission Error:</strong> Could not load wallet addresses. Make sure the <code>wallets</code> collection rule is added to your Firestore security rules.</div>';
+      console.error('loadWalletsAdmin error:', e);
+      return;
+    }
+    if (snap.exists) currentWalletData = snap.data();
+    var html = COINS.map(function(coin) {
+      var addr = (currentWalletData[coin.key] && currentWalletData[coin.key].address) || '';
+      return '<div style="padding:14px 0;border-bottom:1px solid var(--border-lt);">' +
+        '<div style="font-weight:700;font-size:.88rem;margin-bottom:8px;">' + coin.label + '</div>' +
+        '<input class="form-control" id="wallet_' + coin.key + '" placeholder="Enter ' + coin.label + ' address..." value="' + addr.replace(/"/g,'&quot;') + '"/>' +
+      '</div>';
+    }).join('');
+    fields.innerHTML = html;
+  }
+
+  async function saveWallets() {
+    var data = {};
+    COINS.forEach(function(coin) {
+      var el = document.getElementById('wallet_' + coin.key);
+      if (el) data[coin.key] = { address: el.value.trim(), label: coin.label };
+    });
+    try {
+      await db.collection('wallets').doc('addresses').set(data);
+      showToast('Wallet addresses saved successfully.');
+    } catch(e) {
+      showToast('Error saving wallets: ' + e.message, 'error');
+    }
+  }
+
+  function closeModal(id) { document.getElementById(id).style.display='none'; }
+  document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.style.display='none'; }));
+  function adminLogout() { auth.signOut(); window.location.href='login.html'; }
+
+  // ══ KYC ══════════════════════════════════════════════════════════════════
+
+  let allKycDocs = [];
+  let kycModalUid = null;
+
+  async function loadKyc() {
+    document.getElementById('kycTableBody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-muted);">Loading KYC submissions...</td></tr>';
+
+    // Load auto-verify setting
+    try {
+      const settingSnap = await db.collection('settings').doc('kyc').get();
+      const autoOn = settingSnap.exists && settingSnap.data().autoVerify === true;
+      const toggle = document.getElementById('autoVerifyToggle');
+      toggle.checked = autoOn;
+      updateAutoVerifyUI(autoOn);
+    } catch(e) {}
+
+    // Load all KYC docs, enrich with user data
+    try {
+      const kycSnap  = await db.collection('kyc').get();
+      const userMap  = {};
+      allUsers.forEach(u => { userMap[u.id] = u; });
+
+      allKycDocs = kycSnap.docs.map(d => ({
+        uid: d.id,
+        ...d.data(),
+        user: userMap[d.id] || null
+      }));
+      renderKycTable();
+    } catch(e) {
+      document.getElementById('kycTableBody').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--loss);">Failed to load KYC data.</td></tr>';
+    }
+  }
+
+  function renderKycTable() {
+    const filter = document.getElementById('kycFilterStatus').value;
+    const list   = filter ? allKycDocs.filter(d => d.status === filter) : allKycDocs;
+
+    if (!list.length) {
+      document.getElementById('kycTableBody').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-muted);">No KYC submissions found.</td></tr>';
+      return;
+    }
+
+    document.getElementById('kycTableBody').innerHTML = list.map(doc => {
+      const u        = doc.user;
+      const name     = u ? u.fullName  || '—' : '—';
+      const email    = u ? u.email     || '—' : '—';
+      const acctId   = u ? u.accountId || '—' : '—';
+      const idType   = doc.idType ? doc.idType.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) : '—';
+      const dateStr  = doc.submittedAt ? fmtDate(doc.submittedAt) : '—';
+
+      let statusBadge;
+      if (doc.status === 'verified') {
+        statusBadge = '<span class="badge badge-profit" style="background:rgba(0,212,170,.15);color:#00D4AA;border:1px solid rgba(0,212,170,.3);">Verified</span>';
+      } else if (doc.status === 'rejected') {
+        statusBadge = '<span class="badge badge-loss">Rejected</span>';
+      } else {
+        statusBadge = '<span class="badge" style="background:rgba(255,176,32,.15);color:var(--warning);border:1px solid rgba(255,176,32,.3);">Pending</span>';
+      }
+
+      const hasDocs = doc.frontImage || doc.backImage;
+
+      return `<tr>
+        <td>
+          <strong>${name}</strong>
+          <div style="font-size:.74rem;color:var(--text-muted);">${email}</div>
+        </td>
+        <td class="mono" style="font-size:.78rem;">${acctId}</td>
+        <td style="font-size:.82rem;">${idType}</td>
+        <td style="font-size:.76rem;color:var(--text-muted);">${dateStr}</td>
+        <td>${statusBadge}</td>
+        <td>
+          ${hasDocs
+            ? `<button class="btn btn-ghost btn-sm" onclick="openKycModal('${doc.uid}')" style="display:inline-flex;align-items:center;gap:4px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                View
+               </button>`
+            : '<span style="font-size:.76rem;color:var(--text-muted);">—</span>'}
+        </td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" style="background:#00D4AA;color:#fff;border:none;" onclick="quickKycStatus('${doc.uid}','verified')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="quickKycStatus('${doc.uid}','rejected')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openKycModal(uid) {
+    const doc = allKycDocs.find(d => d.uid === uid);
+    if (!doc) return;
+    kycModalUid = uid;
+
+    const u = doc.user;
+    document.getElementById('kycImgModalTitle').textContent =
+      (u ? u.fullName || 'User' : 'User') + ' — KYC Documents';
+    document.getElementById('kycImgUserInfo').textContent =
+      (u ? u.email || '' : '') + (u && u.accountId ? ' · ' + u.accountId : '');
+
+    // Status badge
+    const sb = document.getElementById('kycImgStatusBadge');
+    if (doc.status === 'verified') {
+      sb.textContent = 'Verified'; sb.className = 'badge badge-profit';
+      sb.style = 'background:rgba(0,212,170,.15);color:#00D4AA;border:1px solid rgba(0,212,170,.3);';
+    } else if (doc.status === 'rejected') {
+      sb.textContent = 'Rejected'; sb.className = 'badge badge-loss'; sb.style = '';
+    } else {
+      sb.textContent = 'Pending'; sb.className = 'badge';
+      sb.style = 'background:rgba(255,176,32,.15);color:var(--warning);border:1px solid rgba(255,176,32,.3);';
+    }
+
+    // Images
+    const frontImg = document.getElementById('kycImgFront');
+    const backImg  = document.getElementById('kycImgBack');
+    const frontEmp = document.getElementById('kycImgFrontEmpty');
+    const backEmp  = document.getElementById('kycImgBackEmpty');
+    if (doc.frontImage) {
+      frontImg.src = doc.frontImage; frontImg.style.display = 'block'; frontEmp.style.display = 'none';
+    } else {
+      frontImg.style.display = 'none'; frontEmp.style.display = 'flex';
+    }
+    if (doc.backImage) {
+      backImg.src = doc.backImage; backImg.style.display = 'block'; backEmp.style.display = 'none';
+    } else {
+      backImg.style.display = 'none'; backEmp.style.display = 'flex';
+    }
+
+    document.getElementById('kycReviewNote').value = doc.reviewNote || '';
+    document.getElementById('kycImgModal').style.display = 'flex';
+  }
+
+  async function setKycStatus(status) {
+    if (!kycModalUid) return;
+    const note = document.getElementById('kycReviewNote').value.trim();
+    try {
+      await db.collection('kyc').doc(kycModalUid).update({
+        status:     status,
+        reviewNote: note,
+        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      await db.collection('users').doc(kycModalUid).update({ kycStatus: status });
+
+      // Update local cache
+      const idx = allKycDocs.findIndex(d => d.uid === kycModalUid);
+      if (idx !== -1) { allKycDocs[idx].status = status; allKycDocs[idx].reviewNote = note; }
+      renderKycTable();
+      document.getElementById('kycImgModal').style.display = 'none';
+      showToast('KYC status updated to ' + status, 'success');
+    } catch(e) {
+      showToast('Failed to update KYC status: ' + e.message, 'error');
+    }
+  }
+
+  async function quickKycStatus(uid, status) {
+    try {
+      await db.collection('kyc').doc(uid).update({
+        status:     status,
+        reviewNote: status === 'verified' ? 'Approved by admin' : 'Rejected by admin',
+        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      await db.collection('users').doc(uid).update({ kycStatus: status });
+      const idx = allKycDocs.findIndex(d => d.uid === uid);
+      if (idx !== -1) allKycDocs[idx].status = status;
+      renderKycTable();
+      showToast('KYC ' + status, 'success');
+    } catch(e) {
+      showToast('Error: ' + e.message, 'error');
+    }
+  }
+
+  async function saveAutoVerifySetting() {
+    const on = document.getElementById('autoVerifyToggle').checked;
+    updateAutoVerifyUI(on);
+    try {
+      await db.collection('settings').doc('kyc').set({ autoVerify: on }, { merge: true });
+      showToast('Auto-verify ' + (on ? 'enabled' : 'disabled'), 'success');
+    } catch(e) {
+      showToast('Failed to save setting: ' + e.message, 'error');
+    }
+  }
+
+  function updateAutoVerifyUI(on) {
+    const slider = document.getElementById('autoVerifySlider');
+    const thumb  = document.getElementById('autoVerifyThumb');
+    const label  = document.getElementById('autoVerifyLabel');
+    if (on) {
+      slider.style.background = '#00D4AA';
+      thumb.style.transform   = 'translateX(22px)';
+      label.textContent       = 'On';
+      label.style.color       = '#00D4AA';
+    } else {
+      slider.style.background = 'var(--border)';
+      thumb.style.transform   = 'translateX(0)';
+      label.textContent       = 'Off';
+      label.style.color       = 'var(--text-muted)';
+    }
+  }
+</script>
+
+<!-- Smartsupp Live Chat -->
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'c0c38f8476efd1d3fc7bd4507febb581ebec7846';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+<!-- Google Translate: widget init & language persistence -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({
+      pageLanguage:'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+
+    // Watch for language changes and save to localStorage
+    function ntWatchLang(){
+      var sel = document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change', function(){
+          localStorage.setItem('nt-lang', sel.value);
+          document.cookie = 'googtrans=/en/' + sel.value + '; path=/';
+        });
+        // Apply saved language on load
+        var saved = localStorage.getItem('nt-lang');
+        if(saved && saved !== 'en' && sel.value !== saved){
+          sel.value = saved;
+          sel.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(ntWatchLang, 300);
+      }
+    }
+    ntWatchLang();
+
+    // Move widget into the nav slot once ready
+    function ntMountWidget(){
+      var wrap = document.getElementById('nt-translate-wrap');
+      var gadget = document.querySelector('.goog-te-gadget');
+      if(wrap && gadget){ wrap.appendChild(gadget); }
+      else { setTimeout(ntMountWidget, 300); }
+    }
+    ntMountWidget();
+  }
+</script>
+</body>
+</html>

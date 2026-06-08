@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Withdraw</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Google Translate: restore saved language -->
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en'){
+        // Inject the cookie Google Translate reads on load
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+      }
+    })();
+  </script>
+  <!-- Google Translate widget (hidden element; widget is triggered via JS) -->
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{
+      background:var(--surface-2,#f4f4f4)!important;border:1px solid var(--border,#ddd)!important;
+      border-radius:6px!important;padding:4px 8px!important;font-size:.78rem!important;
+      display:inline-flex!important;align-items:center!important;cursor:pointer!important;
+      gap:4px!important;
+    }
+    .goog-te-gadget-simple span{color:var(--text,#222)!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+    #nt-translate-wrap{display:inline-flex;align-items:center;}
+  </style>
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('nt-theme')||'light');</script>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="brand-logo">N</div><div class="brand-name">Nex<span>Trade</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Dashboard</a>
+      <a href="trade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Trade</a>
+      <a href="copytrade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Copy Trade</a>
+      <a href="market.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Markets</a>
+      <a href="history.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> History</a>
+      <div class="nav-section-label" style="margin-top:10px;">Account</div>
+      <a href="deposit.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Deposit</a>
+      <a href="withdraw.html" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Withdraw</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Profile</a>
+      <a href="kyc.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></span> Verify ID <span id="kycNavBadge" style="display:none;margin-left:auto;font-size:.62rem;background:rgba(255,176,32,.2);color:var(--warning);border:1px solid rgba(255,176,32,.35);border-radius:99px;padding:1px 6px;font-weight:700;">Pending</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="avatar" id="sidebarAvatar">?</div><div class="user-info"><div class="name" id="sidebarName">—</div><div class="uid" id="sidebarUid">—</div></div></div>
+      <span id="nt-translate-wrap" style="display:inline-flex;align-items:center;margin-bottom:6px;width:100%;"></span>
+      <div style="display:flex;gap:8px;"><button onclick="toggleTheme()" id="themeToggle" class="theme-btn" style="flex:0 0 36px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></button><button onclick="auth.signOut().then(()=>location.href='login.html')" class="btn btn-ghost btn-full btn-sm" style="display:flex;align-items:center;gap:5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</button></div>
+    </div>
+  </aside>
+  <div style="flex:1;">
+    <div class="topbar"><div class="topbar-title">Withdraw</div></div>
+    <div class="page-body">
+      <div style="max-width:540px;">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header"><h3>Request Withdrawal</h3><span class="mono" id="availBal" style="font-size:.88rem;color:var(--accent);">Available: —</span></div>
+          <div class="card-body">
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:20px;background:var(--surface-2);padding:12px;border-radius:var(--r-sm);border:1px solid var(--border);">Withdrawal requests are reviewed by our team. Please allow 1–3 business days for processing.</p>
+            <div class="form-group">
+              <label class="form-label">Withdrawal Method</label>
+              <div class="method-grid">
+                <div class="method-card active" id="mBank" onclick="selectMethod('bank')"><div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="label">Bank Transfer</div><div class="sub">Wire</div></div>
+                <div class="method-card" id="mCrypto" onclick="selectMethod('crypto')"><div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 8h4a2 2 0 0 1 0 4H9zm0 4h5a2 2 0 0 1 0 4H9z"/><line x1="9" y1="6" x2="9" y2="18"/><line x1="13" y1="6" x2="13" y2="18"/></svg></div><div class="label">Crypto</div><div class="sub">BTC / ETH / USDT</div></div>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Amount (USD)</label><input type="number" class="form-control" id="wdAmount" placeholder="e.g. 200" min="10"/><div class="form-hint">Minimum withdrawal: $10</div></div>
+            <div class="form-group"><label class="form-label">Wallet Address / Bank Details</label><textarea class="form-control" id="wdAddress" rows="2" placeholder="Crypto address or bank account details"></textarea></div>
+            <div class="form-group"><label class="form-label">Notes <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label><textarea class="form-control" id="wdNotes" rows="2" placeholder="Any additional information"></textarea></div>
+            <button class="btn btn-primary btn-full btn-lg" id="submitBtn" onclick="submitWithdrawal()">Submit Withdrawal Request</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>My Withdrawal Requests</h3></div>
+          <div class="table-wrapper"><table><thead><tr><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody id="wdHistory"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Loading...</td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mobile-nav">
+  <a href="dashboard.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>Home</a>
+  <a href="trade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Trade</a>
+  <a href="copytrade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Copy</a>
+  <a href="deposit.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>Deposit</a>
+  <a href="withdraw.html" class="active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Withdraw</a>
+  <a href="kyc.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></span>Verify</a>
+  <a href="profile.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Profile</a>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  initTheme();
+  let currentUser=null,userData=null,selectedMethod='bank',kycApproved=false;
+  function selectMethod(m){selectedMethod=m;document.getElementById('mBank').classList.toggle('active',m==='bank');document.getElementById('mCrypto').classList.toggle('active',m==='crypto');}
+  function showKycBlock(){var e=document.getElementById('kycBlockMsgWd');if(e)return;var m=document.createElement('div');m.id='kycBlockMsgWd';m.style.cssText='background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);border-radius:var(--r);padding:16px 18px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px;';m.innerHTML='<div style="display:flex;align-items:center;gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong style="font-size:.88rem;color:#e74c3c;">Identity Verification Required</strong></div><p style="font-size:.83rem;color:var(--text-md);line-height:1.6;margin:0;">Identity verification must be completed before you can withdraw.</p><a href="kyc.html" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#0A1628;font-weight:700;font-size:.82rem;padding:8px 16px;border-radius:var(--r-sm);text-decoration:none;width:fit-content;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Complete Verification</a>';var b=document.getElementById('submitBtn');if(b&&b.parentElement)b.parentElement.insertBefore(m,b);}
+requireAuth(async user=>{currentUser=user;const s=await db.collection('users').doc(user.uid).get();userData=s.data();document.getElementById('sidebarName').textContent=userData.fullName||'Trader';if(typeof smartsupp==='function'){smartsupp('name',userData.fullName||'Trader');smartsupp('email',userData.email||'');}document.getElementById('sidebarUid').textContent=userData.accountId||'—';document.getElementById('sidebarAvatar').textContent=(userData.fullName||'T')[0];document.getElementById('availBal').textContent='Available: '+fmtCurrency(userData.balance);try{const ks=await db.collection('kyc').doc(user.uid).get();kycApproved=ks.exists&&(ks.data().status==='approved'||ks.data().status==='verified');}catch(e){kycApproved=false;}loadWithdrawalHistory();});
+  async function submitWithdrawal(){if(!kycApproved){showKycBlock();return;}const amount=parseFloat(document.getElementById('wdAmount').value);const address=document.getElementById('wdAddress').value.trim();const notes=document.getElementById('wdNotes').value.trim();if(!amount||amount<10)return showToast('Minimum withdrawal is $10.','error');if(amount>(userData?.balance||0))return showToast('Insufficient balance.','error');if(!address)return showToast('Please provide withdrawal details.','error');const btn=document.getElementById('submitBtn');btn.disabled=true;btn.textContent='Submitting...';try{await db.collection('transactions').add({userId:currentUser.uid,type:'withdrawal',amount,method:selectedMethod,address,notes,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});document.getElementById('wdAmount').value='';document.getElementById('wdAddress').value='';document.getElementById('wdNotes').value='';showToast('Withdrawal request submitted! Our team will process it shortly.');loadWithdrawalHistory();}catch(e){console.error(e);showToast('Error submitting request: '+e.message,'error');}finally{btn.disabled=false;btn.textContent='Submit Withdrawal Request';}}
+  async function loadWithdrawalHistory(){const tbody=document.getElementById('wdHistory');try{const snap=await db.collection('transactions').where('userId','==',currentUser.uid).get();const wds=snap.docs.map(d=>{return{id:d.id,...d.data()}}).filter(t=>t.type==='withdrawal').sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));if(!wds.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">No withdrawal requests yet.</td></tr>';return;}tbody.innerHTML=wds.map(t=>{const sc=t.status==='approved'?'badge-profit':t.status==='rejected'?'badge-loss':'badge-pending';return`<tr><td class="mono">${fmtCurrency(t.amount)}</td><td style="text-transform:capitalize;">${t.method}</td><td><span class="badge ${sc}">${t.status}</span></td><td style="font-size:.76rem;color:var(--text-muted);">${fmtDate(t.createdAt)}</td></tr>`;}).join('');}catch(e){console.error(e);tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Could not load history.</td></tr>';}}
+</script>
+
+<!-- Smartsupp Live Chat -->
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'c0c38f8476efd1d3fc7bd4507febb581ebec7846';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+<!-- Google Translate: widget init & language persistence -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({
+      pageLanguage:'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+
+    // Watch for language changes and save to localStorage
+    function ntWatchLang(){
+      var sel = document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change', function(){
+          localStorage.setItem('nt-lang', sel.value);
+          document.cookie = 'googtrans=/en/' + sel.value + '; path=/';
+        });
+        // Apply saved language on load
+        var saved = localStorage.getItem('nt-lang');
+        if(saved && saved !== 'en' && sel.value !== saved){
+          sel.value = saved;
+          sel.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(ntWatchLang, 300);
+      }
+    }
+    ntWatchLang();
+
+    // Move widget into the nav slot once ready
+    function ntMountWidget(){
+      var wrap = document.getElementById('nt-translate-wrap');
+      var gadget = document.querySelector('.goog-te-gadget');
+      if(wrap && gadget){ wrap.appendChild(gadget); }
+      else { setTimeout(ntMountWidget, 300); }
+    }
+    ntMountWidget();
+  }
+</script>
+</body>
+</html>

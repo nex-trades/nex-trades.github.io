@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Trade Smarter</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en') document.cookie = 'googtrans=/en/' + lang + '; path=/';
+    })();
+  </script>
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'IBM Plex Sans',sans-serif;background:#fff;color:#111;padding-top:0;}
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.25)!important;border-radius:6px!important;padding:4px 8px!important;font-size:.76rem!important;display:inline-flex!important;align-items:center!important;cursor:pointer!important;gap:4px!important;}
+    .goog-te-gadget-simple span{color:#fff!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+
+    /* NAV */
+    .nt-nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:58px;background:rgba(10,22,40,.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.07);}
+    .nt-logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+    .nt-logo-box{width:32px;height:32px;background:linear-gradient(135deg,#00D4AA,#00A080);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:.9rem;}
+    .nt-logo-text{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#fff;}
+    .nt-logo-text span{color:#00D4AA;}
+    .nt-nav-right{display:flex;align-items:center;gap:8px;}
+    .nt-btn-login{border:1px solid rgba(255,255,255,.25);color:#fff;background:transparent;padding:6px 16px;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s;}
+    .nt-btn-login:hover{background:rgba(255,255,255,.08);}
+    .nt-btn-start{background:#00D4AA;color:#0A1628;border:none;padding:6px 16px;border-radius:6px;font-size:.8rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .2s;}
+    .nt-btn-start:hover{background:#00b894;}
+
+    /* TICKER */
+    .nt-ticker{position:fixed;top:58px;left:0;right:0;z-index:999;height:34px;background:#050f1e;border-bottom:1px solid rgba(255,255,255,.06);overflow:hidden;display:flex;align-items:center;}
+    .nt-ticker-track{display:flex;white-space:nowrap;animation:tickScroll 45s linear infinite;}
+    @keyframes tickScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .nt-tick{display:inline-flex;align-items:center;gap:7px;padding:0 22px;border-right:1px solid rgba(255,255,255,.05);}
+    .nt-tick .ts{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;color:#fff;}
+    .nt-tick .tp{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.5);}
+    .nt-tick .tc{font-size:.66rem;font-weight:700;}
+    .tc-up{color:#00D4AA;}.tc-dn{color:#e74c3c;}
+
+    /* HERO */
+    .nt-hero{min-height:100vh;padding-top:92px;background:linear-gradient(160deg,#0A1628 0%,#0D2040 55%,#0a2a1e 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-left:20px;padding-right:20px;position:relative;overflow:hidden;}
+    .nt-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(0,212,170,.07) 0%,transparent 70%);pointer-events:none;}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.28);color:#00D4AA;font-size:.69rem;font-weight:700;border-radius:99px;padding:4px 13px;margin-bottom:22px;text-transform:uppercase;letter-spacing:.8px;}
+    .nt-hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,8vw,4.2rem);font-weight:800;color:#fff;line-height:1.07;margin-bottom:8px;text-transform:uppercase;letter-spacing:-.5px;}
+    .nt-hero h1 span{color:#00D4AA;}
+    .hero-sub{font-size:clamp(.9rem,2.5vw,1.15rem);color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+    .hero-p{font-size:.9rem;color:rgba(255,255,255,.45);max-width:460px;margin:0 auto 32px;line-height:1.7;}
+    .hero-cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:52px;}
+    .cta-pri{background:#00D4AA;color:#0A1628;border:none;padding:13px 34px;border-radius:6px;font-size:.88rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s;}
+    .cta-pri:hover{background:#00b894;}
+    .cta-sec{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.28);padding:13px 34px;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s;}
+    .cta-sec:hover{background:rgba(255,255,255,.06);}
+    .hero-stats{display:flex;justify-content:center;gap:44px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.07);padding-top:32px;width:100%;max-width:680px;}
+    .hs{text-align:center;}
+    .hs .v{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;color:#00D4AA;}
+    .hs .l{font-size:.72rem;color:rgba(255,255,255,.4);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;}
+
+    /* SECTIONS */
+    .sec{padding:72px 20px;}
+    .sec-inner{max-width:860px;margin:0 auto;}
+    .sec-inner-wide{max-width:1060px;margin:0 auto;}
+    .sec-title{text-align:center;margin-bottom:44px;}
+    .sec-title h2{font-family:'Syne',sans-serif;font-size:clamp(1.3rem,4vw,1.85rem);font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#111;margin-bottom:8px;}
+    .sec-title h2 .ac{color:#00D4AA;}
+    .sec-title h2 .rd{color:#c0392b;}
+    .sec-title p{font-size:.86rem;color:#666;max-width:500px;margin:0 auto;line-height:1.7;}
+
+    /* ACCOUNT CARDS */
+    .acct-card{background:#f8f8f8;border:1px solid #e6e6e6;border-radius:12px;padding:20px 22px 48px;margin-bottom:12px;position:relative;transition:box-shadow .2s;}
+    .acct-card:hover{box-shadow:0 4px 18px rgba(0,0,0,.07);}
+    .acct-card h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#111;margin-bottom:4px;}
+    .acct-desc{font-size:.78rem;color:#666;margin-bottom:13px;line-height:1.55;}
+    .feat-list{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:0;}
+    .feat-list li{display:flex;align-items:center;gap:7px;font-size:.81rem;color:#333;}
+    .feat-list li svg{flex-shrink:0;color:#00D4AA;}
+    .acct-arrow{position:absolute;right:18px;bottom:16px;color:#bbb;font-size:1rem;text-decoration:none;transition:color .2s,transform .2s;}
+    .acct-arrow:hover{color:#00D4AA;transform:translateX(3px);}
+    .abadge{display:inline-block;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:rgba(0,212,170,.1);color:#00A080;border-radius:4px;padding:2px 6px;margin-left:7px;vertical-align:middle;}
+    .abadge.pop{background:rgba(192,57,43,.1);color:#c0392b;}
+    .outline-btn{display:block;width:fit-content;margin:28px auto 0;border:1.5px solid #00D4AA;color:#00D4AA;background:transparent;padding:12px 38px;border-radius:6px;font-size:.84rem;font-weight:700;text-decoration:none;text-align:center;text-transform:uppercase;letter-spacing:.4px;transition:background .2s,color .2s;}
+    .outline-btn:hover{background:#00D4AA;color:#0A1628;}
+
+    /* BOOST */
+    .boost-card{background:#f8f8f8;border:1px solid #e6e6e6;border-radius:12px;padding:20px 22px 16px;margin-bottom:12px;}
+    .boost-amt{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#111;}
+    .boost-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#999;margin-bottom:11px;}
+    .claim-btn{display:block;width:100%;max-width:320px;margin:22px auto 0;border:1.5px solid #00D4AA;color:#00D4AA;background:transparent;padding:12px;border-radius:6px;font-size:.84rem;font-weight:700;text-decoration:none;text-align:center;text-transform:uppercase;letter-spacing:.4px;transition:background .2s,color .2s;cursor:pointer;}
+    .claim-btn:hover{background:#00D4AA;color:#0A1628;}
+    .claim-tc{text-align:center;font-size:.68rem;color:#bbb;margin-top:6px;}
+
+    /* NUMBERS */
+    .numbers-sec{background:#f4f4f4;padding:72px 20px;}
+    .num-list{max-width:480px;margin:0 auto;}
+    .num-item{display:flex;align-items:baseline;padding:18px 0;border-bottom:1px solid #ddd;}
+    .num-item:last-child{border-bottom:none;}
+    .num-val{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#111;min-width:170px;}
+    .num-lbl{font-size:.85rem;color:#666;}
+
+    /* LIVE MARKETS */
+    .mkt-sec{background:#fff;padding:72px 20px;}
+    .mkt-wrapper{display:flex;border-radius:12px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,.08);max-width:860px;margin:0 auto;}
+    .mkt-sidebar{display:flex;flex-direction:column;background:#f5f5f5;min-width:100px;flex-shrink:0;}
+    .mkt-tab{padding:16px 10px;text-align:center;cursor:pointer;border-bottom:1px solid #e8e8e8;font-size:.72rem;font-weight:600;color:#999;transition:background .15s;}
+    .mkt-tab:last-child{border-bottom:none;}
+    .mkt-tab.active{background:#fff;color:#111;border-left:3px solid #00D4AA;}
+    .mkt-tab svg{display:block;margin:0 auto 4px;color:#ccc;}
+    .mkt-tab.active svg{color:#00D4AA;}
+    .mkt-table-wrap{flex:1;overflow-x:auto;}
+    .mkt-table{width:100%;border-collapse:collapse;}
+    .mkt-table th{text-align:left;font-size:.68rem;color:#bbb;font-weight:600;padding:12px 14px;border-bottom:1px solid #eee;text-transform:uppercase;letter-spacing:.4px;}
+    .mkt-table td{padding:10px 14px;font-size:.82rem;border-bottom:1px solid #f4f4f4;}
+    .mkt-table tr:last-child td{border-bottom:none;}
+    .td-sym{font-family:'IBM Plex Mono',monospace;font-weight:700;color:#111;}
+    .td-sell{color:#e74c3c;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+    .td-buy{color:#00b894;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+    .td-spr{color:#bbb;font-family:'IBM Plex Mono',monospace;font-size:.76rem;}
+    .mkt-note{font-size:.67rem;color:#ccc;padding:7px 14px 10px;}
+
+    /* LIVE CHART */
+    .chart-sec{background:#0A1628;padding:72px 20px;}
+    .chart-sec .sec-title h2{color:#fff;}
+    .chart-sec .sec-title p{color:rgba(255,255,255,.45);}
+    .chart-sym-tabs{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+    .csb{padding:6px 14px;border-radius:99px;font-size:.75rem;font-weight:600;border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.55);background:transparent;cursor:pointer;transition:all .15s;}
+    .csb.active,.csb:hover{background:#00D4AA;border-color:#00D4AA;color:#0A1628;}
+    .chart-box{max-width:880px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.07);}
+
+    /* LOYALTY */
+    .loyalty-sec{background:#f4f4f4;padding:72px 20px;}
+    .loyalty-card{max-width:860px;margin:0 auto;border-radius:14px;background:#111;overflow:hidden;box-shadow:0 8px 36px rgba(0,0,0,.2);}
+    .loyalty-inner{padding:36px 30px;}
+    .loy-shields{display:flex;gap:3px;margin-bottom:12px;}
+    .loy-sh{width:26px;height:30px;border-radius:50% 50% 28% 28%;display:flex;align-items:center;justify-content:center;}
+    .loyalty-inner h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#fff;margin-bottom:5px;}
+    .loyalty-inner h2{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.2;}
+    .loyalty-inner p{font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:22px;}
+    .loy-btn{display:inline-block;background:#00D4AA;color:#0A1628;padding:11px 28px;border-radius:6px;font-weight:700;font-size:.82rem;text-decoration:none;transition:background .2s;}
+    .loy-btn:hover{background:#00b894;}
+    .loy-tc{font-size:.65rem;color:rgba(255,255,255,.25);margin-top:7px;}
+
+    /* APP SECTION */
+    .app-sec{background:#fff;padding:72px 20px;}
+    .app-sec .sec-title h2 .rd{color:#c0392b;}
+    .app-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:30px;}
+    .asb{display:inline-flex;align-items:center;gap:7px;background:#111;color:#fff;padding:9px 18px;border-radius:8px;text-decoration:none;transition:background .2s;}
+    .asb:hover{background:#333;}
+    .asb .asbt{font-size:.57rem;color:rgba(255,255,255,.55);line-height:1;}
+    .asb .asbn{font-size:.85rem;font-weight:700;line-height:1.3;}
+    .app-feats{list-style:none;max-width:480px;margin:0 auto 28px;}
+    .app-feats li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f2f2f2;font-size:.85rem;color:#444;}
+    .app-feats li:last-child{border-bottom:none;}
+    .afi{width:34px;height:34px;border-radius:8px;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#00D4AA;}
+    .app-img{display:block;max-width:400px;width:100%;margin:0 auto;border-radius:12px;}
+
+    /* PLATFORMS */
+    .plat-sec{background:#f9f9f9;padding:72px 20px;}
+    .plat-card{background:#fff;border:1px solid #e6e6e6;border-radius:14px;padding:28px 22px;text-align:center;margin-bottom:18px;}
+    .plat-icon{width:48px;height:48px;margin:0 auto 12px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:1.1rem;}
+    .plat-card h3{font-family:'Syne',sans-serif;font-size:.96rem;font-weight:700;margin-bottom:5px;color:#111;}
+    .plat-card p{font-size:.79rem;color:#666;margin-bottom:18px;}
+    .plat-card img{width:100%;border-radius:10px;border:1px solid #e8e8e8;}
+    .plat-placeholder{background:#f5f5f5;border-radius:10px;height:170px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:.82rem;border:1px solid #eee;}
+
+    /* INSTRUMENTS */
+    .inst-sec{background:#fff;padding:72px 20px;}
+    .inst-card{border:1px solid #e6e6e6;border-radius:12px;overflow:hidden;margin-bottom:14px;}
+    .inst-head{padding:13px 18px;display:flex;align-items:center;gap:9px;}
+    .inst-head span{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:#fff;}
+    .inst-badge{margin-left:auto;font-size:.62rem;border-radius:99px;padding:2px 7px;font-weight:700;}
+    .inst-row-i{display:flex;justify-content:space-between;align-items:center;padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:.76rem;font-weight:700;color:#111;border-bottom:1px solid #f4f4f4;}
+    .inst-row-i:last-child{border-bottom:none;}
+    .inst-row-i span{font-family:'IBM Plex Sans',sans-serif;font-size:.73rem;font-weight:400;color:#888;}
+
+    /* TRUSTED */
+    .trust-sec{background:#111;padding:72px 20px;}
+    .trust-sec .sec-title h2{color:#fff;}
+    .trust-card{background:#1a1a1a;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:32px 22px;text-align:center;margin-bottom:12px;}
+    .trust-card h3{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.5);margin-bottom:20px;}
+    .trust-icon{margin:0 auto 18px;color:rgba(255,255,255,.2);}
+    .trust-card p{font-size:.8rem;color:rgba(255,255,255,.4);line-height:1.6;}
+    .trust-card .tsub{font-size:.75rem;color:rgba(255,255,255,.25);margin-top:3px;}
+
+    /* DISCLAIMER BAR */
+    .disc-bar{background:#f8f8f8;border-top:1px solid #eee;padding:13px 20px;font-size:.72rem;color:#888;line-height:1.65;}
+    .disc-bar a{color:#00D4AA;text-decoration:none;}
+
+    /* FOOTER */
+    .nt-footer{background:#0A1628;}
+    .nt-foot-top{padding:52px 20px 36px;max-width:860px;margin:0 auto;}
+    .nt-foot-top h4{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px;}
+    .foot-social{display:flex;gap:12px;margin-bottom:28px;}
+    .foot-social a{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);text-decoration:none;transition:border-color .2s,color .2s;}
+    .foot-social a:hover{border-color:#00D4AA;color:#00D4AA;}
+    .foot-app-btns{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:28px;}
+    .fab{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 13px;text-decoration:none;color:#fff;transition:background .2s;}
+    .fab:hover{background:rgba(255,255,255,.1);}
+    .fab .fabt{font-size:.55rem;color:rgba(255,255,255,.45);line-height:1;}
+    .fab .fabn{font-size:.78rem;font-weight:700;line-height:1.3;}
+    .foot-contact{display:flex;flex-direction:column;gap:9px;margin-bottom:28px;}
+    .foot-contact a{display:flex;align-items:center;gap:9px;font-size:.8rem;color:rgba(255,255,255,.45);text-decoration:none;}
+    .foot-contact a:hover{color:#00D4AA;}
+    .foot-hr{border:none;border-top:1px solid rgba(255,255,255,.06);margin:0 20px;}
+    .foot-legal{padding:20px 20px 28px;max-width:860px;margin:0 auto;}
+    .foot-links{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+    .foot-links a{font-size:.77rem;color:rgba(255,255,255,.38);text-decoration:none;cursor:pointer;}
+    .foot-links a:hover{color:#00D4AA;}
+    .foot-disc{font-size:.7rem;color:rgba(255,255,255,.25);line-height:1.7;margin-bottom:12px;}
+    .foot-disc strong{color:rgba(255,255,255,.38);}
+    .foot-copy{font-size:.69rem;color:rgba(255,255,255,.2);text-align:center;padding-top:14px;}
+
+    /* MODAL */
+    .ntm-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:none;align-items:flex-start;justify-content:center;padding:36px 16px;overflow-y:auto;}
+    .ntm{background:#fff;border-radius:14px;width:100%;max-width:660px;max-height:86vh;display:flex;flex-direction:column;}
+    .ntm-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid #eee;}
+    .ntm-head h3{font-family:'Syne',sans-serif;font-size:.96rem;font-weight:700;color:#111;}
+    .ntm-close{background:none;border:none;cursor:pointer;color:#bbb;font-size:1rem;padding:2px;}
+    .ntm-body{padding:22px;overflow-y:auto;font-size:.83rem;line-height:1.8;color:#444;}
+    .ntm-body h4{font-size:.88rem;font-weight:700;color:#111;margin:14px 0 5px;}
+    .ntm-body h4:first-child{margin-top:0;}
+    .ntm-foot{padding:14px 22px;border-top:1px solid #eee;display:flex;justify-content:flex-end;}
+    .ntm-foot button{background:#00D4AA;color:#0A1628;border:none;padding:9px 26px;border-radius:6px;font-weight:700;cursor:pointer;}
+
+    @media(max-width:560px){
+      .nt-hero h1{font-size:2rem;}
+      .hero-stats{gap:24px;}
+      .mkt-wrapper{flex-direction:column;}
+      .mkt-sidebar{flex-direction:row;min-width:unset;}
+      .mkt-tab{flex:1;border-bottom:none;border-right:1px solid #e8e8e8;font-size:.65rem;padding:10px 4px;}
+      .mkt-tab:last-child{border-right:none;}
+      .mkt-tab.active{border-left:none;border-bottom:3px solid #00D4AA;}
+    }
+
+    /* FAQ — INDEX */
+    .faq-sec{background:#fff;padding:72px 20px;}
+    .faq-list{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:0;}
+    .faq-item{border-bottom:1px solid #ececec;}
+    .faq-item:first-child{border-top:1px solid #ececec;}
+    .faq-btn{width:100%;background:none;border:none;padding:20px 4px;display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;text-align:left;}
+    .faq-q{font-family:'IBM Plex Sans',sans-serif;font-size:.9rem;font-weight:600;color:#111;line-height:1.4;}
+    .faq-icon{flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s;}
+    .faq-icon svg{transition:transform .28s;}
+    .faq-item.open .faq-icon{background:#00D4AA;border-color:#00D4AA;}
+    .faq-item.open .faq-icon svg{transform:rotate(45deg);}
+    .faq-item.open .faq-icon svg path{stroke:#0A1628;}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+    .faq-answer-inner{padding:0 4px 20px;font-size:.85rem;color:#555;line-height:1.75;}
+    .faq-more{display:block;text-align:center;margin-top:30px;font-size:.82rem;color:#00D4AA;font-weight:600;text-decoration:none;}
+    .faq-more:hover{text-decoration:underline;}
+  </style>
+<!-- Smartsupp Live Chat script -->
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'c0c38f8476efd1d3fc7bd4507febb581ebec7846';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme','light');</script>
+
+<!-- NAV -->
+<nav class="nt-nav">
+  <a href="index.html" class="nt-logo">
+    <div class="nt-logo-box">N</div>
+    <span class="nt-logo-text">Nex<span>Trade</span></span>
+  </a>
+  <div class="nt-nav-right">
+    <span id="nt-translate-wrap" style="display:inline-flex;align-items:center;margin-right:4px;"></span>
+    <button onclick="toggleTheme()" id="themeToggle" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.55);display:flex;align-items:center;margin-right:2px;padding:4px;"></button>
+    <a href="login.html" class="nt-btn-login">Login</a>
+    <a href="signup.html" class="nt-btn-start">Get Started</a>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="nt-ticker">
+  <div class="nt-ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- HERO -->
+<section class="nt-hero">
+  <div class="hero-badge">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Professional Trading Platform
+  </div>
+  <h1>Trade Smarter.<br/><span>Master the Markets.</span></h1>
+  <p class="hero-sub">Your trading edge starts here</p>
+  <p class="hero-p">Trade Forex, Commodities and Crypto with real-time pricing, institutional-grade execution, and a full-featured brokerage experience.</p>
+  <div class="hero-cta">
+    <a href="signup.html" class="cta-pri">Start Trading Free</a>
+    <a href="#accounts" class="cta-sec">Explore Accounts</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hs"><div class="v">20+</div><div class="l">Instruments</div></div>
+    <div class="hs"><div class="v">3</div><div class="l">Asset Classes</div></div>
+    <div class="hs"><div class="v">Real-time</div><div class="l">Price Updates</div></div>
+    <div class="hs"><div class="v">Free</div><div class="l">To Register</div></div>
+  </div>
+</section>
+
+<!-- ACCOUNT TYPES -->
+<section class="sec" id="accounts">
+  <div class="sec-inner">
+    <div class="sec-title">
+      <h2><span class="ac">AWARDED</span> AS BEST TRADING ACCOUNTS</h2>
+      <p>Designed from the ground up to suit the needs of all traders, from beginners to advanced — these are the <strong>best trading accounts</strong> in the industry.</p>
+    </div>
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:82px;height:82px;border:2px solid #e8e8e8;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d4a017" stroke-width="1.5"><circle cx="12" cy="8" r="6"/><path d="M8 14l-2 8 6-3 6 3-2-8"/></svg>
+        <div style="font-size:.48rem;font-weight:700;text-align:center;color:#aaa;line-height:1.2;margin-top:2px;">BEST TRADING<br/>ACCOUNTS</div>
+      </div>
+    </div>
+    <div class="acct-card">
+      <h3>Starter <span class="abadge">Beginner</span></h3>
+      <p class="acct-desc">Perfect for new traders. Get started with low minimum deposits and zero commission.</p>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>No minimum deposit</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Zero commission</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Swap free</li>
+      </ul>
+      <a href="signup.html" class="acct-arrow">&#8594;</a>
+    </div>
+    <div class="acct-card">
+      <h3>Standard</h3>
+      <p class="acct-desc">Standard account is an excellent choice for novice traders who want to put their trading skills to the test.</p>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Trade in cents</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Zero commission</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Swap free</li>
+      </ul>
+      <a href="signup.html" class="acct-arrow">&#8594;</a>
+    </div>
+    <div class="acct-card">
+      <h3>Zero</h3>
+      <p class="acct-desc">Zero account is an accessible, swap free, low-cost trading solution suitable for all traders.</p>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Zero spreads</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Up to 1:2000 leverage</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Swap free</li>
+      </ul>
+      <a href="signup.html" class="acct-arrow">&#8594;</a>
+    </div>
+    <div class="acct-card">
+      <h3>Pro</h3>
+      <p class="acct-desc">Pro account is developed to suit the needs of a more experienced trader who wants to level up their trading.</p>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Low spreads</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Up to 1:2000 leverage</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Zero commission</li>
+      </ul>
+      <a href="signup.html" class="acct-arrow">&#8594;</a>
+    </div>
+    <div class="acct-card">
+      <h3>Pro Plus <span class="abadge pop">Popular</span></h3>
+      <p class="acct-desc">Pro Plus account is tailored for seasoned traders seeking optimal trading conditions and exclusive perks.</p>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Lower spreads</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Up to 1:2000 leverage</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Limited time only</li>
+      </ul>
+      <a href="signup.html" class="acct-arrow">&#8594;</a>
+    </div>
+    <div class="acct-card">
+      <h3>Premium</h3>
+      <p class="acct-desc">Premium account is for retail traders who want swap free trading with no minimum deposit and no commission.</p>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Zero commission</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Up to 1:2000 leverage</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>No minimum deposit</li>
+      </ul>
+      <a href="signup.html" class="acct-arrow">&#8594;</a>
+    </div>
+    <a href="signup.html" class="outline-btn">Open Account</a>
+  </div>
+</section>
+
+<!-- BOOST -->
+<section class="sec" style="background:#f9f9f9;">
+  <div class="sec-inner">
+    <div class="sec-title"><h2><span class="ac">BOOST</span> YOUR TRADING</h2></div>
+    <div class="boost-card">
+      <div class="boost-amt">Up to $500</div>
+      <div class="boost-lbl">Shield Bonus</div>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Available on first-time deposit</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Bonus replicates losses</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Profits are withdrawable</li>
+      </ul>
+    </div>
+    <div class="boost-card">
+      <div class="boost-amt">100%</div>
+      <div class="boost-lbl">Supercharged Bonus</div>
+      <ul class="feat-list">
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Applies to minimum deposit</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Bonus up to $50,000</li>
+        <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Daily cash rebates of $2 per lot</li>
+      </ul>
+    </div>
+    <a href="signup.html" class="claim-btn">Claim Bonus</a>
+    <div class="claim-tc">Terms and Conditions apply</div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<section class="numbers-sec">
+  <div class="sec-inner">
+    <div class="sec-title"><h2>NUMBERS POWERING OUR SUCCESS <span class="rd">SINCE 2020</span></h2></div>
+    <div class="num-list">
+      <div class="num-item"><div class="num-val">4 million</div><div class="num-lbl">Client accounts</div></div>
+      <div class="num-item"><div class="num-val">$4 billion</div><div class="num-lbl">Client deposits</div></div>
+      <div class="num-item"><div class="num-val">150,000</div><div class="num-lbl">Partners</div></div>
+      <div class="num-item"><div class="num-val">500+</div><div class="num-lbl">Trading instruments</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE MARKETS TABLE -->
+<section class="mkt-sec" id="markets">
+  <div class="sec-inner">
+    <div class="sec-title">
+      <h2><span class="ac">LIVE</span> MARKET PRICES</h2>
+      <p>Real-time Sell/Buy quotes across all asset classes.</p>
+    </div>
+    <div class="mkt-wrapper">
+      <div class="mkt-sidebar">
+        <div class="mkt-tab active" onclick="switchMkt('forex',this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Forex
+        </div>
+        <div class="mkt-tab" onclick="switchMkt('commodities',this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Commodities
+        </div>
+        <div class="mkt-tab" onclick="switchMkt('crypto',this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>
+          Crypto
+        </div>
+        <div class="mkt-tab" onclick="switchMkt('indices',this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg>
+          Indices
+        </div>
+      </div>
+      <div class="mkt-table-wrap">
+        <table class="mkt-table">
+          <thead><tr><th>Markets</th><th>Sell</th><th>Buy</th><th>Spread</th></tr></thead>
+          <tbody id="mktBody"></tbody>
+        </table>
+        <div class="mkt-note">Zero spread quotes are delayed &middot; Commissions apply</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE CHART -->
+<section class="chart-sec" id="chart">
+  <div class="sec-inner">
+    <div class="sec-title">
+      <h2><span class="ac">LIVE</span> CHART</h2>
+      <p>Real-time price charts powered by TradingView.</p>
+    </div>
+    <div class="chart-sym-tabs">
+      <button class="csb active" onclick="switchChart('FX:EURUSD',this)">EUR/USD</button>
+      <button class="csb" onclick="switchChart('FX:GBPUSD',this)">GBP/USD</button>
+      <button class="csb" onclick="switchChart('FX:USDJPY',this)">USD/JPY</button>
+      <button class="csb" onclick="switchChart('TVC:GOLD',this)">Gold</button>
+      <button class="csb" onclick="switchChart('TVC:USOIL',this)">Crude Oil</button>
+      <button class="csb" onclick="switchChart('BINANCE:BTCUSDT',this)">BTC/USD</button>
+      <button class="csb" onclick="switchChart('BINANCE:ETHUSDT',this)">ETH/USD</button>
+    </div>
+    <div class="chart-box">
+      <div id="tvChart" style="height:420px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOYALTY -->
+<section class="loyalty-sec">
+  <div class="sec-inner">
+    <div class="loyalty-card">
+      <div class="loyalty-inner">
+        <div class="loy-shields">
+          <div class="loy-sh" style="background:#c0392b;"><svg width="12" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="loy-sh" style="background:#bdc3c7;"><svg width="12" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="loy-sh" style="background:#d4a017;"><svg width="12" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        </div>
+        <h3>NexTrade Loyalty Program</h3>
+        <h2>Earn Rewards<br/>While You Trade</h2>
+        <p>Trade, level up, and unlock extraordinary rewards! Rise from Rookie to Legend and win exclusive prizes, cash rebates, and high-end rewards along the way.</p>
+        <a href="signup.html" class="loy-btn">Join Now</a>
+        <div class="loy-tc">Terms and Conditions apply</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MOBILE APP -->
+<section class="app-sec">
+  <div class="sec-inner">
+    <div class="sec-title">
+      <h2><span class="rd">NEXTRADE APP:</span><br/>YOUR TRADING EDGE</h2>
+      <p>We have created a mobile experience specifically tailored to the needs and demands of our traders. The NexTrade App is modern, innovative, intuitive and awarded as the <strong>Best Forex Trading App.</strong></p>
+    </div>
+    <div class="app-btns">
+      <a href="#" class="asb">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <div><div class="asbt">Download on the</div><div class="asbn">App Store</div></div>
+      </a>
+      <a href="#" class="asb">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.63.24.97.18l13.1-7.44-2.83-2.83-11.24 10.09zm16.57-9.41L16.96 12l2.79-2.35-12.96-7.37c-.39-.22-.82-.26-1.21-.12l11.17 11.19zM2.05 1.67C2.02 1.88 2 2.1 2 2.33v19.34c0 .23.02.45.05.66l11.2-11.2L2.05 1.67zm18.54 8.65l-2.32-1.32-3.1 2.63 3.1 3.1 2.34-1.33c.67-.38 1.07-1.04 1.07-1.76s-.4-1.35-1.09-1.32z"/></svg>
+        <div><div class="asbt">Get it on</div><div class="asbn">Google Play</div></div>
+      </a>
+    </div>
+    <ul class="app-feats">
+      <li><div class="afi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>Hundreds of Instruments</li>
+      <li><div class="afi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>One Wallet. Multiple Trading Accounts</li>
+      <li><div class="afi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg></div>Customized Trading</li>
+      <li><div class="afi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>History of Each Trade</li>
+      <li><div class="afi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg></div>Powerful Drawing Tools <span style="font-size:.68rem;color:#00D4AA;font-weight:700;margin-left:4px;">New!</span></li>
+    </ul>
+    <!-- Drop your image file named app-mockup.png into the same folder -->
+    <img src="app-mockup.png" alt="NexTrade App" class="app-img" onerror="this.style.display='none'"/>
+  </div>
+</section>
+
+<!-- MT4 / MT5 -->
+<section class="plat-sec" id="platforms">
+  <div class="sec-inner">
+    <div class="sec-title">
+      <h2>TRADING <span class="ac">PLATFORMS</span></h2>
+      <p>Trade on the world's most powerful platforms — available on desktop, web and mobile.</p>
+    </div>
+    <div class="plat-card">
+      <div class="plat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">4</div>
+      <h3>MetaTrader 4</h3>
+      <p>The world's most popular trading platform — trusted by millions of traders globally.</p>
+      <!-- Drop mt4-platform.png into the same folder -->
+      <img src="mt4-platform.png" alt="MetaTrader 4" onerror="this.outerHTML='<div class=plat-placeholder>MT4 — Drop mt4-platform.png here</div>'"/>
+    </div>
+    <div class="plat-card">
+      <div class="plat-icon" style="background:linear-gradient(135deg,#00D4AA,#00A080);">5</div>
+      <h3>MetaTrader 5</h3>
+      <p>Multi-asset trading on one powerful platform — next-generation analytics and execution.</p>
+      <!-- Drop mt5-platform.png into the same folder -->
+      <img src="mt5-platform.png" alt="MetaTrader 5" onerror="this.outerHTML='<div class=plat-placeholder>MT5 — Drop mt5-platform.png here</div>'"/>
+    </div>
+    <a href="signup.html" class="outline-btn">Compare Platforms</a>
+  </div>
+</section>
+
+
+
+<!-- FAQ -->
+<section class="faq-sec" id="faq">
+  <div class="sec-inner">
+    <div class="sec-title">
+      <h2>FREQUENTLY ASKED <span class="ac">QUESTIONS</span></h2>
+      <p>Quick answers to the most common questions about NexTrade.</p>
+    </div>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-btn" onclick="ntToggleFaq(this)">
+          <span class="faq-q">What is NexTrade and who is it for?</span>
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">NexTrade is a modern online trading platform designed for both beginners and experienced traders. Whether you are taking your first steps in financial markets or managing an advanced portfolio, NexTrade provides the tools, instruments, and support to help you trade with confidence.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" onclick="ntToggleFaq(this)">
+          <span class="faq-q">What instruments can I trade on NexTrade?</span>
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">NexTrade offers a wide range of trading instruments including Forex currency pairs, commodities such as Gold, Silver, and Crude Oil, and major cryptocurrencies including Bitcoin, Ethereum, Solana, and more.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" onclick="ntToggleFaq(this)">
+          <span class="faq-q">What is Copy Trading and how does it work?</span>
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Copy Trading allows you to automatically replicate the trades of experienced and verified traders on the platform. Simply browse our list of top-performing traders, select the one whose strategy suits your goals, and allocate funds to copy their trades in real time. It is an ideal feature for beginners who want to benefit from expert knowledge while still learning the markets.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" onclick="ntToggleFaq(this)">
+          <span class="faq-q">How do I deposit funds into my account?</span>
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Log in to your account and navigate to the Deposit section. Select your preferred payment method, enter the amount, and follow the on-screen instructions. Deposits are typically processed instantly or within a few hours depending on the method used.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" onclick="ntToggleFaq(this)">
+          <span class="faq-q">Is my personal and financial information safe?</span>
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Yes. NexTrade employs industry-standard encryption and security protocols to protect all personal and financial data. Your information is never shared with unauthorised third parties.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" onclick="ntToggleFaq(this)">
+          <span class="faq-q">How do I contact customer support?</span>
+          <span class="faq-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Our support team is available through the live chat feature on the platform, as well as through the Support section in your account dashboard. We are committed to responding to all enquiries promptly.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  function ntToggleFaq(btn) {
+    var item = btn.parentElement;
+    var answer = item.querySelector('.faq-answer');
+    var isOpen = item.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.faq-item.open').forEach(function(el) {
+      el.classList.remove('open');
+      el.querySelector('.faq-answer').style.maxHeight = '0';
+    });
+    // Open clicked if it was closed
+    if (!isOpen) {
+      item.classList.add('open');
+      answer.style.maxHeight = answer.scrollHeight + 'px';
+    }
+  }
+</script>
+
+<!-- TRUSTED & GLOBALLY AWARDED -->
+<section class="trust-sec">
+  <div class="sec-inner">
+    <div class="sec-title"><h2><span style="color:#e74c3c;">TRUSTED</span> &amp; GLOBALLY AWARDED</h2></div>
+    <div class="trust-card">
+      <h3>GLOBAL</h3>
+      <div class="trust-icon"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=".8" stroke-dasharray="2 2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <p>Products &amp; Services available to over 190 countries</p>
+    </div>
+    <div class="trust-card">
+      <h3>SECURED</h3>
+      <div class="trust-icon"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=".8" stroke-dasharray="2 2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg></div>
+      <p>We offer market leading safeguards for our clients by segregating and insuring their funds.</p>
+    </div>
+    <div class="trust-card">
+      <h3>AWARDED</h3>
+      <div class="trust-icon"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=".8" stroke-dasharray="2 2"><circle cx="12" cy="8" r="6"/><path d="M8 14l-2 8 6-3 6 3-2-8"/></svg></div>
+      <p>NexTrade Group<br/><span class="tsub">Winner of over 80 Industry Awards</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- DISCLAIMER BAR -->
+
+
+<!-- FOOTER -->
+<footer class="nt-footer">
+  <div class="nt-foot-top">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:26px;">
+      <div style="width:30px;height:30px;background:linear-gradient(135deg,#00D4AA,#00A080);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:.85rem;">N</div>
+      <span style="font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;color:#fff;">Nex<span style="color:#00D4AA;">Trade</span></span>
+    </div>
+    <h4>Find us on</h4>
+    <div class="foot-social">
+      <a href="#" title="Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="#" title="X"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
+      <a href="#" title="Instagram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+      <a href="#" title="Telegram"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg></a>
+      <a href="#" title="TikTok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg></a>
+      <a href="#" title="YouTube"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/></svg></a>
+      <a href="#" title="LinkedIn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+    </div>
+    <h4>Download NexTrade App</h4>
+    <div class="foot-app-btns">
+      <a href="#" class="fab"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg><div><div class="fabt">Download on the</div><div class="fabn">App Store</div></div></a>
+      <a href="#" class="fab"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.63.24.97.18l13.1-7.44-2.83-2.83-11.24 10.09zm16.57-9.41L16.96 12l2.79-2.35-12.96-7.37c-.39-.22-.82-.26-1.21-.12l11.17 11.19zM2.05 1.67C2.02 1.88 2 2.1 2 2.33v19.34c0 .23.02.45.05.66l11.2-11.2L2.05 1.67zm18.54 8.65l-2.32-1.32-3.1 2.63 3.1 3.1 2.34-1.33c.67-.38 1.07-1.04 1.07-1.76s-.4-1.35-1.09-1.32z"/></svg><div><div class="fabt">Get it on</div><div class="fabn">Google Play</div></div></a>
+    </div>
+    <h4>Contact us</h4>
+    <div class="foot-contact">
+      <a href="mailto:support@nextrade.com"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>support@nextrade.com</a>
+      <a href="support.html"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Live Support</a>
+    </div>
+  </div>
+  <hr class="foot-hr"/>
+  <div class="foot-legal">
+    <div class="foot-links">
+      <a onclick="document.getElementById('privacyModal').style.display='flex'">Privacy Policy</a>
+      <a onclick="document.getElementById('termsModal').style.display='flex'">Terms of Use</a>
+      <a onclick="document.getElementById('disclaimerModal').style.display='flex'">Risk Disclaimer</a>
+      <a onclick="document.getElementById('amlModal').style.display='flex'">AML Policy</a>
+    </div>
+    <div class="foot-disc"><strong>Risk Warning:</strong> Trading leveraged products such as Forex and Derivatives may not be suitable for all investors as they carry a high degree of risk to your capital. Please ensure that you fully understand the risks involved, taking into account your investment objectives and level of experience, before trading, and if necessary, seek independent advice.</div>
+    <div class="foot-disc">NexTrade does not offer services to residents of certain jurisdictions, including the USA, Canada, Sudan, Syria, Iran, North Korea, UAE and others.</div>
+    <div class="foot-copy">© 2025 NexTrade. All Rights Reserved.</div>
+  </div>
+</footer>
+
+<!-- LEGAL MODALS -->
+<div class="ntm-overlay" id="privacyModal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="ntm">
+    <div class="ntm-head"><h3>Privacy Policy</h3><button class="ntm-close" onclick="document.getElementById('privacyModal').style.display='none'">&#x2715;</button></div>
+    <div class="ntm-body">
+      <p style="font-size:.72rem;color:#aaa;margin-bottom:10px;">Last updated: January 2024</p>
+      <h4>1. Information We Collect</h4><p>We collect information you provide directly to us when you create an account, including your full name, email address, phone number, and country of residence. We also collect data about how you use our platform, including trade history, account activity, and device information.</p>
+      <h4>2. How We Use Your Information</h4><p>Your information is used to provide and improve our services, send account-related notifications, respond to support requests, and ensure the security of the platform. We do not sell your personal data to third parties.</p>
+      <h4>3. Data Storage &amp; Security</h4><p>Your data is stored securely using Google Firebase infrastructure with industry-standard encryption in transit and at rest.</p>
+      <h4>4. Cookies</h4><p>We use essential cookies and local storage to maintain your session, theme preference, and language selection. We do not use advertising or tracking cookies.</p>
+      <h4>5. Third-Party Services</h4><p>We use Firebase for authentication and storage, Smartsupp for live chat, TradingView for price charts, and Google Translate for multilingual support.</p>
+      <h4>6. Your Rights</h4><p>You may request access to, correction of, or deletion of your personal data by contacting support.</p>
+    </div>
+    <div class="ntm-foot"><button onclick="document.getElementById('privacyModal').style.display='none'">Close</button></div>
+  </div>
+</div>
+<div class="ntm-overlay" id="termsModal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="ntm">
+    <div class="ntm-head"><h3>Terms of Use</h3><button class="ntm-close" onclick="document.getElementById('termsModal').style.display='none'">&#x2715;</button></div>
+    <div class="ntm-body">
+      <p style="font-size:.72rem;color:#aaa;margin-bottom:10px;">Last updated: January 2024</p>
+      <h4>1. Acceptance of Terms</h4><p>By accessing or using NexTrade, you agree to be bound by these Terms of Use. We reserve the right to modify these terms at any time, and continued use constitutes acceptance of any changes.</p>
+      <h4>2. Nature of the Platform</h4><p>NexTrade is a regulated trading platform providing access to global financial markets. All trades and transactions are processed in accordance with our terms of service.</p>
+      <h4>3. Eligibility</h4><p>You must be at least 18 years of age to create an account.</p>
+      <h4>4. Account Responsibility</h4><p>You are responsible for maintaining the confidentiality of your credentials and all activity under your account.</p>
+      <h4>5. Prohibited Conduct</h4><p>You may not use the platform to engage in fraudulent activity, attempt to manipulate platform data, or use it for any unlawful purpose.</p>
+      <h4>6. Limitation of Liability</h4><p>To the fullest extent permitted by law, NexTrade shall not be liable for any indirect or consequential damages arising from your use of the platform.</p>
+    </div>
+    <div class="ntm-foot"><button onclick="document.getElementById('termsModal').style.display='none'">Close</button></div>
+  </div>
+</div>
+<div class="ntm-overlay" id="disclaimerModal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="ntm">
+    <div class="ntm-head"><h3>Risk Disclaimer</h3><button class="ntm-close" onclick="document.getElementById('disclaimerModal').style.display='none'">&#x2715;</button></div>
+    <div class="ntm-body">
+      <p style="font-size:.72rem;color:#aaa;margin-bottom:10px;">Last updated: January 2024</p>
+      <h4>Market Risk Notice</h4><p>NexTrade provides access to live market prices derived from real-time data feeds. All trading activity is subject to real market conditions and carries inherent risk.</p>
+      <h4>Real Trading Risks</h4><p>Trading Forex, commodities, and cryptocurrencies in real markets carries substantial risk of loss. Leverage can amplify both gains and losses.</p>
+      <h4>Licensed Broker</h4><p>NexTrade is a licensed financial institution, broker, or investment adviser. It holds client funds and is regulated by financial authority.</p>
+    </div>
+    <div class="ntm-foot"><button onclick="document.getElementById('disclaimerModal').style.display='none'">Close</button></div>
+  </div>
+</div>
+<div class="ntm-overlay" id="amlModal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="ntm">
+    <div class="ntm-head"><h3>AML &amp; KYC Policy</h3><button class="ntm-close" onclick="document.getElementById('amlModal').style.display='none'">&#x2715;</button></div>
+    <div class="ntm-body">
+      <p style="font-size:.72rem;color:#aaa;margin-bottom:10px;">Last updated: January 2024</p>
+      <h4>1. Overview</h4><p>NexTrade is committed to maintaining the highest standards of integrity and transparency.</p>
+      <h4>2. Know Your Customer (KYC)</h4><p>Users are required to provide accurate personal information at registration. False or misleading information may result in account suspension.</p>
+      <h4>3. Anti-Money Laundering (AML)</h4><p>We have zero tolerance for any attempts to use the platform in connection with money laundering, terrorist financing, fraud, or other financial crimes.</p>
+      <h4>4. Prohibited Persons</h4><p>Users subject to international sanctions lists are strictly prohibited from using the platform.</p>
+      <h4>5. Record Keeping</h4><p>We maintain records of user activity in accordance with applicable data protection laws.</p>
+    </div>
+    <div class="ntm-foot"><button onclick="document.getElementById('amlModal').style.display='none'">Close</button></div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+  initTheme();
+  auth.onAuthStateChanged(u => { if (u) window.location.href = 'dashboard.html'; });
+
+  // TICKER
+  const tickInsts = [
+    ...INSTRUMENTS.forex.slice(0,4),
+    ...INSTRUMENTS.commodities.slice(0,3),
+    ...INSTRUMENTS.crypto.slice(0,4)
+  ];
+  const tTrack = document.getElementById('tickerTrack');
+  const tHtml = tickInsts.map(i =>
+    `<div class="nt-tick"><span class="ts">${i.symbol}</span><span class="tp">${fmtPrice(i.defaultPrice,i.symbol)}</span><span class="tc tc-up">+0.00%</span></div>`
+  ).join('');
+  tTrack.innerHTML = tHtml + tHtml;
+
+  // MARKETS TABLE
+  var mktPrices = {};
+  ALL_INSTRUMENTS.forEach(i => { mktPrices[i.symbol] = i.defaultPrice; });
+
+  function updateTicker() {
+    document.querySelectorAll('.nt-tick').forEach((el, idx) => {
+      const inst = tickInsts[idx % tickInsts.length];
+      const p    = mktPrices[inst.symbol] || inst.defaultPrice;
+      const diff = ((p - inst.defaultPrice) / inst.defaultPrice * 100).toFixed(2);
+      el.querySelector('.tp').textContent = fmtPrice(p, inst.symbol);
+      const chg = el.querySelector('.tc');
+      chg.textContent = (diff >= 0 ? '+' : '') + diff + '%';
+      chg.className = 'tc ' + (diff >= 0 ? 'tc-up' : 'tc-dn');
+    });
+  }
+  var mktDataMap = {
+    forex: INSTRUMENTS.forex,
+    commodities: INSTRUMENTS.commodities,
+    crypto: INSTRUMENTS.crypto,
+    indices: [
+      { symbol:'US500',  name:'S&P 500',    defaultPrice:5240  },
+      { symbol:'US30',   name:'Dow Jones',  defaultPrice:39200 },
+      { symbol:'US100',  name:'Nasdaq 100', defaultPrice:18400 },
+      { symbol:'UK100',  name:'FTSE 100',   defaultPrice:8100  },
+      { symbol:'GER40',  name:'DAX 40',     defaultPrice:18200 },
+      { symbol:'JPN225', name:'Nikkei 225', defaultPrice:38600 },
+    ]
+  };
+  var curMkt = 'forex';
+
+  function renderMkt() {
+    const list = mktDataMap[curMkt];
+    document.getElementById('mktBody').innerHTML = list.map(i => {
+      const mid  = mktPrices[i.symbol] || i.defaultPrice;
+      const spr  = i.defaultPrice > 1000 ? 0.5 : i.symbol.includes('JPY') ? 0.2 : 0.0;
+      const dp   = i.symbol.includes('JPY') ? 3 : i.defaultPrice > 100 ? 2 : 5;
+      const sell = (mid - spr/2).toFixed(dp);
+      const buy  = (mid + spr/2).toFixed(dp);
+      return `<tr><td class="td-sym">${i.symbol}</td><td class="td-sell">${sell}</td><td class="td-buy">${buy}</td><td class="td-spr">${spr}</td></tr>`;
+    }).join('');
+  }
+  function switchMkt(tab, el) {
+    curMkt = tab;
+    document.querySelectorAll('.mkt-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderMkt();
+  }
+  renderMkt();
+
+  // Start live price refresh — crypto every 60s, forex every 60min
+  startPriceRefresh(mktPrices, function() {
+    renderMkt();
+    updateTicker();
+  });
+
+  // TRADINGVIEW CHART
+  function loadChart(symbol) {
+    document.getElementById('tvChart').innerHTML = '';
+    new TradingView.widget({
+      container_id: 'tvChart',
+      symbol: symbol,
+      interval: 'H1',
+      timezone: 'Etc/UTC',
+      theme: 'dark',
+      style: '1',
+      locale: 'en',
+      toolbar_bg: '#0A1628',
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      save_image: false,
+      height: 420,
+      width: '100%',
+      autosize: true,
+    });
+  }
+  function switchChart(symbol, btn) {
+    document.querySelectorAll('.csb').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadChart(symbol);
+  }
+  window.addEventListener('load', () => {
+    if (typeof TradingView !== 'undefined') loadChart('FX:EURUSD');
+  });
+</script>
+
+<!-- Google Translate -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({pageLanguage:'en',layout:google.translate.TranslateElement.InlineLayout.SIMPLE,autoDisplay:false},'google_translate_element');
+    function ntWL(){
+      var sel=document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change',function(){localStorage.setItem('nt-lang',sel.value);document.cookie='googtrans=/en/'+sel.value+'; path=/';});
+        var sv=localStorage.getItem('nt-lang');
+        if(sv&&sv!=='en'&&sel.value!==sv){sel.value=sv;sel.dispatchEvent(new Event('change'));}
+      } else { setTimeout(ntWL,300); }
+    }
+    ntWL();
+    function ntMW(){
+      var wrap=document.getElementById('nt-translate-wrap');
+      var g=document.querySelector('.goog-te-gadget');
+      if(wrap&&g){wrap.appendChild(g);}else{setTimeout(ntMW,300);}
+    }
+    ntMW();
+  }
+</script>
+</body>
+</html>

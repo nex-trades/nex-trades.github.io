@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────
+    function isSignedIn() { return request.auth != null; }
+
+    // FIX: guard against null auth before accessing .uid
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    function isAdmin() {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // ── Admins collection ────────────────────────────────────
+    // FIX: must allow any signed-in user to READ the admins collection,
+    // otherwise isAdmin() deadlocks — it calls exists() on admins, but
+    // the read rule blocks it, so no one can ever pass the isAdmin() check.
+    match /admins/{uid} {
+      allow read:  if isSignedIn();  // required for isAdmin() to resolve
+      allow write: if false;         // only set via Firebase Console
+    }
+
+    // ── Users ────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow create: if isSignedIn() && isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── KYC ──────────────────────────────────────────────────
+    // FIX: this collection was missing entirely — all KYC operations
+    // (submit, view status, admin review) were being silently denied.
+    match /kyc/{uid} {
+      allow create: if isSignedIn() && isOwner(uid);
+      allow read:   if isOwner(uid) || isAdmin();
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Trades ───────────────────────────────────────────────
+    match /trades/{tradeId} {
+      allow read:   if isSignedIn() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                       request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── Transactions (deposits & withdrawals) ────────────────
+    match /transactions/{txId} {
+      allow read:   if isSignedIn() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                       request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin(); // only admin approves/rejects
+      allow delete: if isAdmin();
+    }
+
+    // ── Prices (public read, admin write) ────────────────────
+    match /prices/{symbol} {
+      allow read:  if true;       // public — shown on landing page ticker
+      allow write: if isAdmin();
+    }
+
+    // ── Support tickets ──────────────────────────────────────
+    match /support/{ticketId} {
+      allow read:   if isSignedIn() &&
+                       (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                       request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin(); // admin replies / resolves
+      allow delete: if isAdmin();
+    }
+
+    // ── Copy trades ──────────────────────────────────────────
+    // NOTE: verify this matches your actual Firestore collection name
+    // (copyTrades vs copyTraders — a mismatch means this rule is ignored)
+    match /copyTrades/{uid} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow write:  if isOwner(uid) || isAdmin();
+    }
+
+    // ── Platform settings (auto-verify toggle, etc.) ─────────
+    match /settings/{doc} {
+      allow read:  if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ── Wallet addresses (public read for deposit page) ──────
+    match /wallets/{doc} {
+      allow read:  if true;       // all users need deposit addresses
+      allow write: if isAdmin();
+    }
+
+    // ── Forex prices (Option 2 — any signed-in user can read/write) ─
+    match /forexPrices/{doc} {
+      allow read:  if true;        // shown on landing page
+      allow write: if isSignedIn(); // any user can save fresh fetch
+    }
+
+    // ── Commodity prices (Option 2 — any signed-in user can read/write) ─
+    match /commodityPrices/{doc} {
+      allow read:  if true;        // shown on landing page
+      allow write: if isSignedIn(); // any user can save fresh fetch
+    }
+
+    // ── Copy positions ────────────────────────────────────────
+    match /copyPositions/{docId} {
+      allow read:  if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn() && (request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // ── Copy trade daily counts ───────────────────────────────
+    match /copyTradeCounts/{docId} {
+      allow read, write: if request.auth != null && docId.matches(request.auth.uid + '_.*');
+    }
+
+  }
+}

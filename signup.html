@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Create Account</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Google Translate: restore saved language -->
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en'){
+        // Inject the cookie Google Translate reads on load
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+      }
+    })();
+  </script>
+  <!-- Google Translate widget (hidden element; widget is triggered via JS) -->
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{
+      background:var(--surface-2,#f4f4f4)!important;border:1px solid var(--border,#ddd)!important;
+      border-radius:6px!important;padding:4px 8px!important;font-size:.78rem!important;
+      display:inline-flex!important;align-items:center!important;cursor:pointer!important;
+      gap:4px!important;
+    }
+    .goog-te-gadget-simple span{color:var(--text,#222)!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+    #nt-translate-wrap{display:inline-flex;align-items:center;}
+  </style>
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('nt-theme')||'light');</script>
+
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="logo">N</div>
+      <div class="name">Nex<span>Trade</span></div>
+    </div>
+    <h2>Start Trading Today</h2>
+    <p>Join NexTrade and access global Forex, Commodities and Crypto markets from one powerful platform.</p>
+    <div class="auth-stats">
+      <div class="auth-stat" style="text-align:center;">
+        <div class="val">Free</div>
+        <div class="lbl">To Register</div>
+      </div>
+      <div class="auth-stat" style="text-align:center;">
+        <div class="val">Secure</div>
+        <div class="lbl">& Protected</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-box">
+      <h2>Create Account</h2>
+      <p class="sub">Fill in your details to get started</p>
+
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:var(--text-muted);display:none;" id="errorBox"></div>
+      <div style="background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.3);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:var(--profit);display:none;" id="successBox"></div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="fullName" placeholder="John Smith"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" placeholder="trader@email.com"/>
+      </div>
+      <div class="two-col" style="gap:12px;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" placeholder="Min. 6 characters"/>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" class="form-control" id="confirmPass" placeholder="Repeat password"/>
+        </div>
+      </div>
+      <div class="two-col" style="gap:12px;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" class="form-control" id="phoneNumber" placeholder="+1 234 567 8900"/>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Country</label>
+          <select class="form-control" id="country">
+            <option value="">Select country...</option>
+            <option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Andorra</option><option>Angola</option><option>Antigua and Barbuda</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahamas</option><option>Bahrain</option><option>Bangladesh</option><option>Barbados</option><option>Belarus</option><option>Belgium</option><option>Belize</option><option>Benin</option><option>Bhutan</option><option>Bolivia</option><option>Bosnia and Herzegovina</option><option>Botswana</option><option>Brazil</option><option>Brunei</option><option>Bulgaria</option><option>Burkina Faso</option><option>Burundi</option><option>Cabo Verde</option><option>Cambodia</option><option>Cameroon</option><option>Canada</option><option>Central African Republic</option><option>Chad</option><option>Chile</option><option>China</option><option>Colombia</option><option>Comoros</option><option>Congo</option><option>Costa Rica</option><option>Croatia</option><option>Cuba</option><option>Cyprus</option><option>Czech Republic</option><option>Denmark</option><option>Djibouti</option><option>Dominica</option><option>Dominican Republic</option><option>Ecuador</option><option>Egypt</option><option>El Salvador</option><option>Equatorial Guinea</option><option>Eritrea</option><option>Estonia</option><option>Eswatini</option><option>Ethiopia</option><option>Fiji</option><option>Finland</option><option>France</option><option>Gabon</option><option>Gambia</option><option>Georgia</option><option>Germany</option><option>Ghana</option><option>Greece</option><option>Grenada</option><option>Guatemala</option><option>Guinea</option><option>Guinea-Bissau</option><option>Guyana</option><option>Haiti</option><option>Honduras</option><option>Hungary</option><option>Iceland</option><option>India</option><option>Indonesia</option><option>Iran</option><option>Iraq</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Jamaica</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kenya</option><option>Kiribati</option><option>Kuwait</option><option>Kyrgyzstan</option><option>Laos</option><option>Latvia</option><option>Lebanon</option><option>Lesotho</option><option>Liberia</option><option>Libya</option><option>Liechtenstein</option><option>Lithuania</option><option>Luxembourg</option><option>Madagascar</option><option>Malawi</option><option>Malaysia</option><option>Maldives</option><option>Mali</option><option>Malta</option><option>Marshall Islands</option><option>Mauritania</option><option>Mauritius</option><option>Mexico</option><option>Micronesia</option><option>Moldova</option><option>Monaco</option><option>Mongolia</option><option>Montenegro</option><option>Morocco</option><option>Mozambique</option><option>Myanmar</option><option>Namibia</option><option>Nauru</option><option>Nepal</option><option>Netherlands</option><option>New Zealand</option><option>Nicaragua</option><option>Niger</option><option>Nigeria</option><option>North Korea</option><option>North Macedonia</option><option>Norway</option><option>Oman</option><option>Pakistan</option><option>Palau</option><option>Panama</option><option>Papua New Guinea</option><option>Paraguay</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Qatar</option><option>Romania</option><option>Russia</option><option>Rwanda</option><option>Saint Kitts and Nevis</option><option>Saint Lucia</option><option>Saint Vincent and the Grenadines</option><option>Samoa</option><option>San Marino</option><option>Sao Tome and Principe</option><option>Saudi Arabia</option><option>Senegal</option><option>Serbia</option><option>Seychelles</option><option>Sierra Leone</option><option>Singapore</option><option>Slovakia</option><option>Slovenia</option><option>Solomon Islands</option><option>Somalia</option><option>South Africa</option><option>South Korea</option><option>South Sudan</option><option>Spain</option><option>Sri Lanka</option><option>Sudan</option><option>Suriname</option><option>Sweden</option><option>Switzerland</option><option>Syria</option><option>Taiwan</option><option>Tajikistan</option><option>Tanzania</option><option>Thailand</option><option>Timor-Leste</option><option>Togo</option><option>Tonga</option><option>Trinidad and Tobago</option><option>Tunisia</option><option>Turkey</option><option>Turkmenistan</option><option>Tuvalu</option><option>Uganda</option><option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option><option>United States</option><option>Uruguay</option><option>Uzbekistan</option><option>Vanuatu</option><option>Vatican City</option><option>Venezuela</option><option>Vietnam</option><option>Yemen</option><option>Zambia</option><option>Zimbabwe</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" onclick="doSignup()" style="margin-top:8px;margin-bottom:14px;">
+        Create Account →
+      </button>
+      <div class="auth-footer">
+        Already have an account? <a href="login.html">Sign in</a>
+      </div>
+      <div style="margin-top:12px;text-align:center;">
+        <button onclick="toggleTheme()" id="themeToggle" class="theme-btn" style="margin:0 auto;"></button>
+      </div>
+      <div id="nt-translate-wrap" style="display:flex;justify-content:center;margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay" style="display:none;">
+  <div class="spinner"></div>
+  <div class="loading-text">Creating your account...</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  initTheme();
+
+  function showError(msg)   { const b=document.getElementById('errorBox');   b.textContent=msg; b.style.display='block'; document.getElementById('successBox').style.display='none'; }
+  function showSuccess(msg) { const b=document.getElementById('successBox'); b.textContent=msg; b.style.display='block'; document.getElementById('errorBox').style.display='none'; }
+
+  async function doSignup() {
+    const name    = document.getElementById('fullName').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const pass    = document.getElementById('password').value;
+    const conf    = document.getElementById('confirmPass').value;
+    const phone   = document.getElementById('phoneNumber').value.trim();
+    const country = document.getElementById('country').value;
+
+    if (!name||!email||!pass||!conf) return showError('Please fill in all fields.');
+    if (!phone)                      return showError('Please enter your phone number.');
+    if (!country)                    return showError('Please select your country.');
+    if (pass.length < 6)             return showError('Password must be at least 6 characters.');
+    if (pass !== conf)               return showError('Passwords do not match.');
+
+    document.getElementById('loadingOverlay').style.display='flex';
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      const uid  = cred.user.uid;
+
+      // Generate account ID — if Firestore rules block the collision-check query
+      // before the user doc exists, fall back to a locally-generated ID instead.
+      let acctId;
+      try {
+        acctId = await generateAccountId();
+      } catch(idErr) {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let rand = '';
+        for (let i = 0; i < 8; i++) rand += chars.charAt(Math.floor(Math.random() * chars.length));
+        acctId = 'NXT-' + rand;
+      }
+
+      await db.collection('users').doc(uid).set({
+        fullName:    name,
+        email:       email,
+        phone:       phone,
+        country:     country,
+        accountId:   acctId,
+        balance:     0,
+        equity:      0,
+        createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
+        status:      'active',
+        isAdmin:     false,
+      });
+
+      document.getElementById('loadingOverlay').style.display='none';
+      showSuccess('Account created! Setting up verification...');
+      setTimeout(() => window.location.href='kyc.html', 1200);
+    } catch(e) {
+      document.getElementById('loadingOverlay').style.display='none';
+      const msg =
+        e.code === 'auth/email-already-in-use' ? 'This email is already registered. Please sign in instead.' :
+        e.code === 'auth/weak-password'         ? 'Password is too weak. Use at least 6 characters.' :
+        e.code === 'auth/invalid-email'         ? 'Please enter a valid email address.' :
+        e.code === 'auth/network-request-failed'? 'Network error. Check your connection and try again.' :
+        'Signup failed: ' + e.message;
+      showError(msg);
+    }
+  }
+</script>
+
+<!-- Google Translate: widget init & language persistence -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({
+      pageLanguage:'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+
+    // Watch for language changes and save to localStorage
+    function ntWatchLang(){
+      var sel = document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change', function(){
+          localStorage.setItem('nt-lang', sel.value);
+          document.cookie = 'googtrans=/en/' + sel.value + '; path=/';
+        });
+        // Apply saved language on load
+        var saved = localStorage.getItem('nt-lang');
+        if(saved && saved !== 'en' && sel.value !== saved){
+          sel.value = saved;
+          sel.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(ntWatchLang, 300);
+      }
+    }
+    ntWatchLang();
+
+    // Move widget into the nav slot once ready
+    function ntMountWidget(){
+      var wrap = document.getElementById('nt-translate-wrap');
+      var gadget = document.querySelector('.goog-te-gadget');
+      if(wrap && gadget){ wrap.appendChild(gadget); }
+      else { setTimeout(ntMountWidget, 300); }
+    }
+    ntMountWidget();
+  }
+</script>
+</body>
+</html>

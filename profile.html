@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Profile</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Google Translate: restore saved language -->
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en'){
+        // Inject the cookie Google Translate reads on load
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+      }
+    })();
+  </script>
+  <!-- Google Translate widget (hidden element; widget is triggered via JS) -->
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{
+      background:var(--surface-2,#f4f4f4)!important;border:1px solid var(--border,#ddd)!important;
+      border-radius:6px!important;padding:4px 8px!important;font-size:.78rem!important;
+      display:inline-flex!important;align-items:center!important;cursor:pointer!important;
+      gap:4px!important;
+    }
+    .goog-te-gadget-simple span{color:var(--text,#222)!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+    #nt-translate-wrap{display:inline-flex;align-items:center;}
+  </style>
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('nt-theme')||'light');</script>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="brand-logo">N</div><div class="brand-name">Nex<span>Trade</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Dashboard</a>
+      <a href="trade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Trade</a>
+      <a href="copytrade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Copy Trade</a>
+      <a href="market.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Markets</a>
+      <a href="history.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> History</a>
+      <div class="nav-section-label" style="margin-top:10px;">Account</div>
+      <a href="deposit.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Deposit</a>
+      <a href="withdraw.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Withdraw</a>
+      <a href="profile.html" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Profile</a>
+      <a href="kyc.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></span> Verify ID <span id="kycNavBadge" style="display:none;margin-left:auto;font-size:.62rem;background:rgba(255,176,32,.2);color:var(--warning);border:1px solid rgba(255,176,32,.35);border-radius:99px;padding:1px 6px;font-weight:700;">Pending</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="avatar" id="sidebarAvatar">?</div><div class="user-info"><div class="name" id="sidebarName">—</div><div class="uid" id="sidebarUid">—</div></div></div>
+      <span id="nt-translate-wrap" style="display:inline-flex;align-items:center;margin-bottom:6px;width:100%;"></span>
+      <div style="display:flex;gap:8px;"><button onclick="toggleTheme()" id="themeToggle" class="theme-btn" style="flex:0 0 36px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></button><button onclick="auth.signOut().then(()=>location.href='login.html')" class="btn btn-ghost btn-full btn-sm" style="display:flex;align-items:center;gap:5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</button></div>
+    </div>
+  </aside>
+  <div style="flex:1;">
+    <div class="topbar"><div class="topbar-title">Profile</div></div>
+    <div class="page-body">
+      <div style="max-width:600px;">
+        <div class="card" style="margin-bottom:20px;">
+          <div style="padding:28px;text-align:center;border-bottom:1px solid var(--border);">
+            <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0090FF);display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:1.8rem;font-weight:800;color:#fff;margin:0 auto 14px;" id="profileAvatar">?</div>
+            <h2 id="profileName" style="margin-bottom:4px;">—</h2>
+            <p id="profileEmail" style="color:var(--text-muted);font-size:.88rem;">—</p>
+            <span class="badge badge-profit" style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Active Account</span>
+          </div>
+          <div class="card-body">
+            <div class="info-grid">
+              <div class="info-item"><div class="info-item__label">Account ID</div><div class="info-item__value mono" id="piAccountId">—</div></div>
+              <div class="info-item"><div class="info-item__label">Balance</div><div class="info-item__value mono" id="piBalance">—</div></div>
+              <div class="info-item"><div class="info-item__label">Member Since</div><div class="info-item__value" id="piSince">—</div></div>
+              <div class="info-item"><div class="info-item__label">Account Status</div><div class="info-item__value">Active</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-header" style="display:flex;align-items:center;gap:10px;">
+            <h3 style="margin:0;flex:1;">Identity Verification (KYC)</h3>
+            <span id="profileKycBadge" class="badge badge-neutral" style="font-size:.72rem;">Loading...</span>
+          </div>
+          <div class="card-body">
+            <p id="profileKycMsg" style="font-size:.82rem;color:var(--text-muted);margin-bottom:14px;">
+              Checking your verification status...
+            </p>
+            <a href="kyc.html" id="profileKycBtn" class="btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+              Verify Identity
+            </a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Quick Actions</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+            <a href="deposit.html"  class="btn btn-primary"  style="display:flex;align-items:center;gap:8px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Make a Deposit</a>
+            <a href="withdraw.html" class="btn btn-outline"  style="display:flex;align-items:center;gap:8px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Request Withdrawal</a>
+            <a href="history.html"  class="btn btn-ghost"    style="display:flex;align-items:center;gap:8px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> View Trade History</a>
+            <button onclick="auth.signOut().then(()=>location.href='login.html')" class="btn btn-danger" style="display:flex;align-items:center;gap:8px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mobile-nav">
+  <a href="dashboard.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>Home</a>
+  <a href="trade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Trade</a>
+  <a href="copytrade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Copy</a>
+  <a href="deposit.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>Deposit</a>
+  <a href="withdraw.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Withdraw</a>
+  <a href="profile.html" class="active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Profile</a>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  initTheme();
+  requireAuth(async user=>{
+    let snap = await db.collection('users').doc(user.uid).get();
+    let ud = snap.data();
+
+    // Self-heal: if the user doc is missing (e.g. signup crashed before Firestore write),
+    // recreate it now so the profile page isn't permanently blank.
+    if (!snap.exists || !ud) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let rand = '';
+      for (let i = 0; i < 8; i++) rand += chars.charAt(Math.floor(Math.random() * chars.length));
+      ud = {
+        fullName:  user.displayName || 'Trader',
+        email:     user.email,
+        phone:     '',
+        country:   '',
+        accountId: 'NXT-' + rand,
+        balance:   0,
+        equity:    0,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status:    'active',
+        isAdmin:   false,
+      };
+      try { await db.collection('users').doc(user.uid).set(ud); } catch(e) { console.warn('Profile self-heal failed:', e); }
+    }
+
+    document.getElementById('sidebarName').textContent=document.getElementById('profileName').textContent=ud.fullName||'Trader';
+      if (typeof smartsupp === 'function') { smartsupp('name', ud.fullName||'Trader'); smartsupp('email', ud.email||''); }
+    document.getElementById('sidebarUid').textContent=ud.accountId||'—';
+    document.getElementById('sidebarAvatar').textContent=document.getElementById('profileAvatar').textContent=(ud.fullName||'T')[0];
+    document.getElementById('profileEmail').textContent=user.email;
+    document.getElementById('piAccountId').textContent=ud.accountId||'—';
+    document.getElementById('piBalance').textContent=fmtCurrency(ud.balance);
+    document.getElementById('piSince').textContent=ud.createdAt?.toDate?ud.createdAt.toDate().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—';
+
+    // KYC status card
+    try {
+      const kycSnap = await db.collection('kyc').doc(user.uid).get();
+      const badge   = document.getElementById('profileKycBadge');
+      const msg     = document.getElementById('profileKycMsg');
+      const btn     = document.getElementById('profileKycBtn');
+      if (!kycSnap.exists) {
+        badge.textContent='Not Started'; badge.className='badge badge-neutral';
+        msg.textContent='Your identity has not been verified. Complete verification to unlock all features.';
+        btn.textContent='Start Verification'; btn.style.display='inline-flex';
+      } else {
+        const st = kycSnap.data().status;
+        if (st==='verified') {
+          badge.textContent='Verified'; badge.style='background:rgba(0,212,170,.15);color:#00D4AA;border:1px solid rgba(0,212,170,.3);font-size:.72rem;';
+          msg.textContent='Your identity has been verified. You have full access to all platform features.';
+          btn.textContent='View Documents'; btn.style.display='inline-flex';
+        } else if (st==='pending') {
+          badge.textContent='Pending Review'; badge.style='background:rgba(255,176,32,.15);color:var(--warning);border:1px solid rgba(255,176,32,.3);font-size:.72rem;';
+          msg.textContent='Your documents have been submitted and are under review. We\'ll update you once complete.';
+          btn.textContent='View Status'; btn.style.display='inline-flex';
+        } else if (st==='rejected') {
+          badge.textContent='Rejected'; badge.className='badge badge-loss';
+          msg.textContent='Your documents were not accepted. Please re-upload clear, valid ID images.';
+          btn.textContent='Re-upload Documents'; btn.style.display='inline-flex';
+        }
+      }
+    } catch(e) {
+      document.getElementById('profileKycMsg').textContent='Could not load verification status.';
+    }
+  });
+</script>
+
+<!-- Smartsupp Live Chat -->
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'c0c38f8476efd1d3fc7bd4507febb581ebec7846';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+<!-- Google Translate: widget init & language persistence -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({
+      pageLanguage:'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+
+    // Watch for language changes and save to localStorage
+    function ntWatchLang(){
+      var sel = document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change', function(){
+          localStorage.setItem('nt-lang', sel.value);
+          document.cookie = 'googtrans=/en/' + sel.value + '; path=/';
+        });
+        // Apply saved language on load
+        var saved = localStorage.getItem('nt-lang');
+        if(saved && saved !== 'en' && sel.value !== saved){
+          sel.value = saved;
+          sel.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(ntWatchLang, 300);
+      }
+    }
+    ntWatchLang();
+
+    // Move widget into the nav slot once ready
+    function ntMountWidget(){
+      var wrap = document.getElementById('nt-translate-wrap');
+      var gadget = document.querySelector('.goog-te-gadget');
+      if(wrap && gadget){ wrap.appendChild(gadget); }
+      else { setTimeout(ntMountWidget, 300); }
+    }
+    ntMountWidget();
+  }
+</script>
+</body>
+</html>

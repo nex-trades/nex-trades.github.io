@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>NexTrade — Deposit</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .coin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+    .coin-card { border:1.5px solid var(--border); border-radius:var(--r-sm); padding:10px 8px; text-align:center; cursor:pointer; transition:all .16s; background:var(--surface-2); }
+    .coin-card:hover { border-color:var(--accent); }
+    .coin-card.active { border-color:var(--accent); background:rgba(0,212,170,.08); }
+    .coin-card .coin-icon { font-size:1.4rem; margin-bottom:4px; display:flex; align-items:center; justify-content:center; height:32px; }
+    .coin-card .coin-name { font-size:.72rem; font-weight:700; font-family:var(--font-h); }
+    .coin-card .coin-sub { font-size:.62rem; color:var(--text-muted); }
+    .wallet-box { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm); padding:16px; margin-bottom:14px; }
+    .wallet-addr { font-family:var(--font-m); font-size:.8rem; word-break:break-all; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 12px; margin:8px 0; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .wallet-addr span { flex:1; }
+    .copy-addr-btn { flex-shrink:0; background:var(--accent); color:#fff; border:none; border-radius:var(--r-sm); padding:5px 10px; font-size:.72rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .qr-wrap { text-align:center; margin:12px 0; }
+    .qr-wrap img { max-width:160px; border-radius:var(--r-sm); border:1px solid var(--border); }
+    .qr-wrap canvas { border-radius:var(--r-sm); border:1px solid var(--border); }
+    .deposit-note { background:rgba(255,176,32,.08); border:1px solid rgba(255,176,32,.25); border-radius:var(--r-sm); padding:12px 14px; font-size:.81rem; color:var(--warning); margin-bottom:14px; line-height:1.6; }
+    .method-tab { display:flex; gap:0; border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden; margin-bottom:18px; }
+    .method-tab-btn { flex:1; padding:10px; text-align:center; font-size:.84rem; font-weight:600; font-family:var(--font-b); cursor:pointer; border:none; background:var(--surface-2); color:var(--text-muted); transition:all .16s; }
+    .method-tab-btn.active { background:var(--accent); color:#fff; }
+  </style>
+  <!-- Google Translate: restore saved language -->
+  <script>
+    (function(){
+      var lang = localStorage.getItem('nt-lang');
+      if(lang && lang !== 'en'){
+        // Inject the cookie Google Translate reads on load
+        document.cookie = 'googtrans=/en/' + lang + '; path=/';
+      }
+    })();
+  </script>
+  <!-- Google Translate widget (hidden element; widget is triggered via JS) -->
+  <script src="//translate.google.com/translate_a/element.js?cb=ntInitGT" async></script>
+  <style>
+    .goog-te-banner-frame{display:none!important;}
+    body{top:0!important;}
+    .goog-te-gadget-simple{
+      background:var(--surface-2,#f4f4f4)!important;border:1px solid var(--border,#ddd)!important;
+      border-radius:6px!important;padding:4px 8px!important;font-size:.78rem!important;
+      display:inline-flex!important;align-items:center!important;cursor:pointer!important;
+      gap:4px!important;
+    }
+    .goog-te-gadget-simple span{color:var(--text,#222)!important;}
+    .goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none!important;}
+    #nt-translate-wrap{display:inline-flex;align-items:center;}
+  </style>
+</head>
+<body>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('nt-theme')||'light');</script>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="brand-logo">N</div><div class="brand-name">Nex<span>Trade</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="dashboard.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span> Dashboard</a>
+      <a href="trade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span> Trade</a>
+      <a href="copytrade.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Copy Trade</a>
+      <a href="market.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Markets</a>
+      <a href="history.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> History</a>
+      <div class="nav-section-label" style="margin-top:10px;">Account</div>
+      <a href="deposit.html" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Deposit</a>
+      <a href="withdraw.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Withdraw</a>
+      <a href="profile.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Profile</a>
+      <a href="kyc.html" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></span> Verify ID <span id="kycNavBadge" style="display:none;margin-left:auto;font-size:.62rem;background:rgba(255,176,32,.2);color:var(--warning);border:1px solid rgba(255,176,32,.35);border-radius:99px;padding:1px 6px;font-weight:700;">Pending</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="avatar" id="sidebarAvatar">?</div><div class="user-info"><div class="name" id="sidebarName">—</div><div class="uid" id="sidebarUid">—</div></div></div>
+      <span id="nt-translate-wrap" style="display:inline-flex;align-items:center;margin-bottom:6px;width:100%;"></span>
+      <div style="display:flex;gap:8px;"><button onclick="toggleTheme()" id="themeToggle" class="theme-btn" style="flex:0 0 36px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;pointer-events:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg></button><button onclick="auth.signOut().then(function(){location.href='login.html'})" class="btn btn-ghost btn-full btn-sm" style="display:flex;align-items:center;gap:5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</button></div>
+    </div>
+  </aside>
+  <div style="flex:1;">
+    <div class="topbar"><div class="topbar-title">Deposit</div></div>
+    <div class="page-body">
+      <div style="max-width:560px;">
+
+        <!-- Method Tabs -->
+        <div class="method-tab">
+          <button class="method-tab-btn active" id="tabCrypto" onclick="switchMethod('crypto')">Cryptocurrency</button>
+          <button class="method-tab-btn" id="tabBank" onclick="switchMethod('bank')">Bank Transfer</button>
+        </div>
+
+        <!-- ══ CRYPTO PANEL ══ -->
+        <div id="panelCrypto">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header"><h3>Crypto Deposit</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Amount (USD)</label>
+                <input type="number" class="form-control" id="cryptoAmount" placeholder="e.g. 500" min="10"/>
+                <div class="form-hint">Minimum deposit: $10</div>
+              </div>
+
+              <label class="form-label" style="margin-bottom:10px;display:block;">Select Coin</label>
+              <div class="coin-grid">
+                <div class="coin-card active" id="coin-BTC" onclick="selectCoin('BTC')"><div class="coin-icon"><img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="BTC" width="28" height="28" style="border-radius:50%;"/></div><div class="coin-name">Bitcoin</div><div class="coin-sub">BTC</div></div>
+                <div class="coin-card" id="coin-ETH" onclick="selectCoin('ETH')"><div class="coin-icon"><img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="ETH" width="28" height="28" style="border-radius:50%;"/></div><div class="coin-name">Ethereum</div><div class="coin-sub">ETH</div></div>
+                <div class="coin-card" id="coin-LTC" onclick="selectCoin('LTC')"><div class="coin-icon"><img src="https://assets.coingecko.com/coins/images/2/small/litecoin.png" alt="LTC" width="28" height="28" style="border-radius:50%;"/></div><div class="coin-name">Litecoin</div><div class="coin-sub">LTC</div></div>
+                <div class="coin-card" id="coin-BNB" onclick="selectCoin('BNB')"><div class="coin-icon"><img src="https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png" alt="BNB" width="28" height="28" style="border-radius:50%;"/></div><div class="coin-name">BNB</div><div class="coin-sub">BNB</div></div>
+                <div class="coin-card" id="coin-USDT" onclick="selectCoin('USDT')"><div class="coin-icon"><img src="https://assets.coingecko.com/coins/images/325/small/Tether.png" alt="USDT" width="28" height="28" style="border-radius:50%;"/></div><div class="coin-name">Tether</div><div class="coin-sub">USDT</div></div>
+              </div>
+
+              <!-- Wallet address box (loaded from Firestore) -->
+              <div class="wallet-box" id="walletBox">
+                <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;" id="walletCoinLabel">Bitcoin (BTC) Wallet</div>
+                <div class="wallet-addr"><span id="walletAddress">Loading address...</span><button class="copy-addr-btn" onclick="copyAddress()">Copy</button></div>
+                <div class="qr-wrap" id="qrWrap">
+                  <canvas id="qrCanvas"></canvas>
+                </div>
+                <div class="deposit-note">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <strong>Note:</strong> Payments should be made directly to the wallet address above. Your account will be credited with the equivalent USD amount after confirmation — usually within <strong>30 minutes</strong>.
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Transaction Hash <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                <input type="text" class="form-control" id="cryptoRef" placeholder="Paste your TX hash after sending"/>
+              </div>
+              <button class="btn btn-primary btn-full btn-lg" id="cryptoSubmitBtn" onclick="submitCryptoDeposit()">I Have Made This Payment</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ BANK PANEL ══ -->
+        <div id="panelBank" style="display:none;">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header"><h3>Bank Transfer</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Amount (USD)</label>
+                <input type="number" class="form-control" id="bankAmount" placeholder="e.g. 1000" min="10"/>
+                <div class="form-hint">Minimum deposit: $10</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:16px;font-size:.85rem;color:var(--text-muted);line-height:1.7;">
+                For bank transfer details and account information, please contact our support team. We will provide you with the exact bank details and a unique reference number for your transfer.
+              </div>
+              <button class="btn btn-primary btn-full btn-lg" onclick="if(typeof smartsupp==='function'){smartsupp('chat:open');}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:7px;vertical-align:middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Contact Support for Bank Details
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="card">
+          <div class="card-header"><h3>My Deposit Requests</h3></div>
+          <div class="table-wrapper"><table><thead><tr><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody id="depHistory"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Loading...</td></tr></tbody></table></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mobile-nav">
+  <a href="dashboard.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>Home</a>
+  <a href="trade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Trade</a>
+  <a href="copytrade.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Copy</a>
+  <a href="deposit.html" class="active"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>Deposit</a>
+  <a href="withdraw.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Withdraw</a>
+  <a href="kyc.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="13" y1="10" x2="19" y2="10"/><line x1="13" y1="14" x2="17" y2="14"/></svg></span>Verify</a>
+  <a href="profile.html"><span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Profile</a>
+</div>
+
+<!-- QR Code library (no external dependency, pure JS) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  initTheme();
+  var currentUser = null;
+  var selectedCoin = 'BTC';
+  var walletData = {};   // loaded from Firestore
+  var selectedMethod = 'crypto';
+  var qrInstance = null;
+
+  var COIN_LABELS = {
+    BTC:  'Bitcoin (BTC)',
+    ETH:  'Ethereum (ETH)',
+    LTC:  'Litecoin (LTC)',
+    BNB:  'BNB (BNB)',
+    USDT: 'Tether (USDT)'
+  };
+
+  function switchMethod(m) {
+    selectedMethod = m;
+    document.getElementById('tabCrypto').classList.toggle('active', m === 'crypto');
+    document.getElementById('tabBank').classList.toggle('active', m === 'bank');
+    document.getElementById('panelCrypto').style.display = m === 'crypto' ? 'block' : 'none';
+    document.getElementById('panelBank').style.display   = m === 'bank'   ? 'block' : 'none';
+  }
+
+  function selectCoin(coin) {
+    selectedCoin = coin;
+    document.querySelectorAll('.coin-card').forEach(function(c) { c.classList.remove('active'); });
+    document.getElementById('coin-' + coin).classList.add('active');
+    updateWalletDisplay();
+  }
+
+  function updateWalletDisplay() {
+    var addr = (walletData[selectedCoin] && walletData[selectedCoin].address) || '';
+    document.getElementById('walletCoinLabel').textContent = COIN_LABELS[selectedCoin] + ' Wallet';
+    document.getElementById('walletAddress').textContent = addr || 'Address not set yet — contact support.';
+
+    // Auto-generate QR code from address
+    var wrap = document.getElementById('qrWrap');
+    wrap.innerHTML = '';
+    if (addr) {
+      try {
+        new QRCode(wrap, {
+          text: addr,
+          width: 160,
+          height: 160,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        wrap.style.display = 'block';
+      } catch(e) { wrap.style.display = 'none'; }
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  function copyAddress() {
+    var addr = document.getElementById('walletAddress').textContent;
+    if (!addr || addr.includes('not set')) return showToast('No address to copy.', 'error');
+    navigator.clipboard.writeText(addr).then(function() {
+      showToast('Address copied to clipboard!');
+    }).catch(function() {
+      showToast('Could not copy — please copy manually.', 'error');
+    });
+  }
+
+  function goToSupport() {
+    var amt = document.getElementById('bankAmount').value;
+    if (amt) localStorage.setItem('nt-bank-amount', amt);
+    window.location.href = 'support.html';
+  }
+
+  async function submitCryptoDeposit() {
+    if (!kycApproved) { showKycBlock(); return; }
+    var amount = parseFloat(document.getElementById('cryptoAmount').value);
+    var ref    = document.getElementById('cryptoRef').value.trim();
+    if (!amount || amount < 10) return showToast('Minimum deposit is $10.', 'error');
+    var addr = (walletData[selectedCoin] && walletData[selectedCoin].address) || '';
+    if (!addr) return showToast('Wallet address not available. Contact support.', 'error');
+    var btn = document.getElementById('cryptoSubmitBtn');
+    btn.disabled = true; btn.textContent = 'Submitting...';
+    try {
+      await db.collection('transactions').add({
+        userId: currentUser.uid,
+        type: 'deposit',
+        amount: amount,
+        method: 'crypto',
+        coin: selectedCoin,
+        walletAddress: addr,
+        reference: ref,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      document.getElementById('cryptoAmount').value = '';
+      document.getElementById('cryptoRef').value = '';
+      showToast('Payment submitted! Your account will be updated within 30 minutes.');
+      loadDepositHistory();
+    } catch(e) {
+      showToast('Error submitting: ' + e.message, 'error');
+    }
+    btn.disabled = false; btn.textContent = 'I Have Made This Payment';
+  }
+
+  async function loadDepositHistory() {
+    var tbody = document.getElementById('depHistory');
+    try {
+      var snap = await db.collection('transactions').where('userId','==',currentUser.uid).get();
+      var deps = snap.docs.map(function(d){ return Object.assign({id:d.id},d.data()); })
+        .filter(function(t){ return t.type==='deposit'; })
+        .sort(function(a,b){ return ((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0); });
+      if (!deps.length) { tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">No deposit requests yet.</td></tr>'; return; }
+      tbody.innerHTML = deps.map(function(t){
+        var sc = t.status==='approved'?'badge-profit':t.status==='rejected'?'badge-loss':'badge-pending';
+        var method = t.coin ? 'Crypto · ' + t.coin : (t.method||'—');
+        return '<tr><td class="pnl-positive mono">'+fmtCurrency(t.amount)+'</td><td style="font-size:.8rem;">'+method+'</td><td><span class="badge '+sc+'">'+t.status+'</span></td><td style="font-size:.76rem;color:var(--text-muted);">'+fmtDate(t.createdAt)+'</td></tr>';
+      }).join('');
+    } catch(e) { tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Could not load history.</td></tr>'; }
+  }
+
+  var kycApproved = false;
+
+  function showKycBlock() {
+    var existing = document.getElementById('kycBlockMsg');
+    if (existing) return;
+    var msg = document.createElement('div');
+    msg.id = 'kycBlockMsg';
+    msg.style.cssText = 'background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);border-radius:var(--r);padding:16px 18px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px;';
+    msg.innerHTML = '<div style="display:flex;align-items:center;gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong style="font-size:.88rem;color:#e74c3c;">Identity Verification Required</strong></div><p style="font-size:.83rem;color:var(--text-md);line-height:1.6;margin:0;">To protect your funds and comply with financial regulations, identity verification must be completed and approved before you can make a deposit.</p><a href="kyc.html" style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#0A1628;font-weight:700;font-size:.82rem;padding:8px 16px;border-radius:var(--r-sm);text-decoration:none;width:fit-content;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Complete Verification</a>';
+    var btn = document.getElementById('cryptoSubmitBtn');
+    if (btn && btn.parentElement) btn.parentElement.insertBefore(msg, btn);
+  }
+
+  requireAuth(async function(user) {
+    currentUser = user;
+    var s = await db.collection('users').doc(user.uid).get();
+    var ud = s.data();
+    document.getElementById('sidebarName').textContent   = ud.fullName || 'Trader';
+    if (typeof smartsupp==='function') { smartsupp('name',ud.fullName||'Trader'); smartsupp('email',ud.email||''); }
+    document.getElementById('sidebarUid').textContent    = ud.accountId || '—';
+    document.getElementById('sidebarAvatar').textContent = (ud.fullName||'T')[0];
+    try { var kycSnap=await db.collection('kyc').doc(user.uid).get(); kycApproved=kycSnap.exists&&(kycSnap.data().status==='approved'||kycSnap.data().status==='verified'); } catch(e) { kycApproved=false; }
+    db.collection('wallets').doc('addresses').onSnapshot(function(snap) {
+      if (snap.exists) walletData = snap.data();
+      updateWalletDisplay();
+    });
+    loadDepositHistory();
+  });
+</script>
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'c0c38f8476efd1d3fc7bd4507febb581ebec7846';
+window.smartsupp||(function(d) {
+  var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+  c.type='text/javascript';c.charset='utf-8';c.async=true;
+  c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+<noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
+
+<!-- Google Translate: widget init & language persistence -->
+<div id="google_translate_element" style="display:none;"></div>
+<script>
+  function ntInitGT(){
+    new google.translate.TranslateElement({
+      pageLanguage:'en',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+
+    // Watch for language changes and save to localStorage
+    function ntWatchLang(){
+      var sel = document.querySelector('.goog-te-combo');
+      if(sel){
+        sel.addEventListener('change', function(){
+          localStorage.setItem('nt-lang', sel.value);
+          document.cookie = 'googtrans=/en/' + sel.value + '; path=/';
+        });
+        // Apply saved language on load
+        var saved = localStorage.getItem('nt-lang');
+        if(saved && saved !== 'en' && sel.value !== saved){
+          sel.value = saved;
+          sel.dispatchEvent(new Event('change'));
+        }
+      } else {
+        setTimeout(ntWatchLang, 300);
+      }
+    }
+    ntWatchLang();
+
+    // Move widget into the nav slot once ready
+    function ntMountWidget(){
+      var wrap = document.getElementById('nt-translate-wrap');
+      var gadget = document.querySelector('.goog-te-gadget');
+      if(wrap && gadget){ wrap.appendChild(gadget); }
+      else { setTimeout(ntMountWidget, 300); }
+    }
+    ntMountWidget();
+  }
+</script>
+</body>
+</html>
